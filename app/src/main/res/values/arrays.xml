@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="Series">
+        <item>Series 1</item>
+        <item>Series 2</item>
+        <item>Series 3</item>
+        <item>Series 4</item>
+    </string-array>
+
+
+</resources>

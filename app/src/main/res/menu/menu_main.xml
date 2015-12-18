@@ -1,0 +1,51 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.example.owner.pins.MainActivity">
+    <item
+        android:id="@+id/action_settings"
+        android:orderInCategory="100"
+        android:title="@string/action_settings"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_about"
+        android:orderInCategory="100"
+        android:title="@string/action_about"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_resetArduino"
+        android:orderInCategory="100"
+        android:title="@string/action_reset"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_eraser"
+        android:title="clear"
+        android:icon="@drawable/eraser"
+        android:orderInCategory="100"
+        android:enabled="true"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_series_zero"
+        android:title="0"
+        android:orderInCategory="90"
+        android:enabled="true"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_series_one"
+        android:title="1"
+        android:orderInCategory="92"
+        android:enabled="true"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_series_two"
+        android:title="2"
+        android:orderInCategory="94"
+        android:enabled="true"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_series_three"
+        android:title="3"
+        android:orderInCategory="96"
+        android:enabled="true"
+        app:showAsAction="always" />
+</menu>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <EditTextPreference
+        android:key="THRESHOLD"
+        android:title="Threshold"
+        android:summary="Enter the threshold to keep the voltage below"
+        android:inputType="numberDecimal"
+        android:maxLength="4"
+        android:defaultValue="1.5"
+        />
+
+    <EditTextPreference
+        android:key="SMOOTHING"
+        android:title="Smoothing"
+        android:summary="Enter the number of values to be averaged to determine if the threshold has been passed"
+        android:inputType="number"
+        android:maxLength="2"
+        android:defaultValue="10"
+        />
+
+    <EditTextPreference
+        android:key="ADDRESS"
+        android:title="IP Address"
+        android:summary="Enter the IP Address of the Arduino Device"
+        android:inputType="phone"
+        />
+
+</PreferenceScreen>
