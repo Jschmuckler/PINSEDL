@@ -27,8 +27,13 @@ import com.jjoe64.graphview.series.DataPointInterface;
 import com.jjoe64.graphview.series.LineGraphSeries;
 import com.jjoe64.graphview.series.OnDataPointTapListener;
 import com.jjoe64.graphview.series.Series;
-
 import java.util.Iterator;
+
+/**
+ * @author Jordan Schmuckler
+ * @version 4.4
+ */
+
 
 public class MainActivity extends AppCompatActivity implements AsyncResponse {
 
