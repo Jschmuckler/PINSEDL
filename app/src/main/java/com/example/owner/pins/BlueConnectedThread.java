@@ -23,6 +23,7 @@ public class BlueConnectedThread extends Thread implements Runnable {
             tmpOut = socket.getOutputStream();
         }
         catch (IOException e) {
+            e.printStackTrace();
         }
         btInStream = tmpIn;
         btOutStream = tmpOut;
