@@ -1,6 +1,8 @@
 package com.example.owner.pins;
 
 import android.app.AlertDialog;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -10,6 +12,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -28,6 +31,7 @@ import com.jjoe64.graphview.series.LineGraphSeries;
 import com.jjoe64.graphview.series.OnDataPointTapListener;
 import com.jjoe64.graphview.series.Series;
 import java.util.Iterator;
+import java.util.Set;
 
 /**
  * @author Jordan Schmuckler
@@ -59,6 +63,9 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
     private MainActivity mainActivity = this;
     boolean[] isSeriesActive = new boolean[4];
     private ResponseReceiver receiver;
+    private BluetoothAdapter btAdapter;
+    private BluetoothDevice btDevice;
+    Handler btHandler;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,7 +90,9 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
                     active = isChecked;
                     Log.w(TAG, "Active is " + active);
                     Log.d(TAG, "Active is " + active);
-                    getAndSetData();
+                    connectBT();
+
+                    //getAndSetData();
 
                 } else {
                     mySwitch.setText("OFF");
@@ -167,6 +176,10 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         two.setText("2");
         three.setText("3");
 
+
+
+
+
         series0.setOnDataPointTapListener(new OnDataPointTapListener() {
             @Override
             public void onTap(Series series, DataPointInterface dataPoint) {
@@ -203,6 +216,10 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         filter.addCategory(Intent.CATEGORY_DEFAULT);
         receiver = new ResponseReceiver();
         registerReceiver(receiver, filter);
+
+        checkBTState();
+        getBondedDevices();
+
     }
 
     @Override
@@ -465,7 +482,6 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
             Log.w(TAG, "Launching a new helper");
             getAndSetData();
         }
-        //mutex = true;
     }
 
     public void getAndSetData() {
@@ -549,6 +565,86 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         switchPreviouslyActiveFlag = mySwitch.isChecked();
         mySwitch.setChecked(false);
     }
+
+    private void checkBTState() {
+        // Check for Bluetooth support and then check to make sure it is turned on
+
+        // Emulator doesn't support Bluetooth and will return null
+        btAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (btAdapter == null) {
+// Device does not support Bluetooth
+        }
+        if(btAdapter==null) {
+            Log.w(TAG,"Device does not support bluetooth, abort.");
+        } else {
+            if (btAdapter.isEnabled()) {
+                Log.d(TAG, "...Bluetooth is enabled...");
+            } else {
+                //Prompt user to turn on Bluetooth
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBtIntent, 1);
+            }
+        }
+    }
+
+    private void getBondedDevices()
+    {
+        Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
+        String deviceList = " ";
+        if (pairedDevices.size() > 0) {
+            for (BluetoothDevice device : pairedDevices) {
+                deviceList = deviceList + device.getName() + "/n";
+                if(device.getName().equals("Adafruit EZ-Link 80f2"))
+                {
+                    Log.w(TAG,device.getName()+ " found.");
+                btDevice = device;
+                }
+
+                else
+                {
+                    Log.w(TAG,"Adafruit EZ-Link 80f2 not found");
+                }
+            }
+        }
+        Toast.makeText(this, deviceList, Toast.LENGTH_LONG).show();
+
+
+    }
+
+
+
+
+
+    private void connectBT()
+    {
+
+            if (btDevice != null)
+            {
+
+                btHandler = new Handler() {
+                @Override
+                public void handleMessage(Message msg) {
+                    byte[] writeBuf = (byte[]) msg.obj;
+                    int begin = (int)msg.arg1;
+                    int end = (int)msg.arg2;
+
+                    switch(msg.what) {
+                        case 1:
+                            String writeMessage = new String(writeBuf);
+                            writeMessage = writeMessage.substring(begin, end);
+                            Toast.makeText(mainActivity,writeMessage, Toast.LENGTH_LONG).show();
+                            break;
+                    }
+                }
+            };
+
+
+                BlueConnectThread btConnectThread = new BlueConnectThread(btDevice, btAdapter,btHandler);
+            btConnectThread.start();
+        }
+    }
+
+
 
     /**
      * Activates when the app is resumed.
