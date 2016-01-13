@@ -31,6 +31,7 @@ import com.jjoe64.graphview.series.LineGraphSeries;
 import com.jjoe64.graphview.series.OnDataPointTapListener;
 import com.jjoe64.graphview.series.Series;
 import java.util.Iterator;
+import java.util.Scanner;
 import java.util.Set;
 
 /**
@@ -66,6 +67,9 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
     private BluetoothAdapter btAdapter;
     private BluetoothDevice btDevice;
     Handler btHandler;
+    Scanner getDoublesScanner;
+    Double[] currentData;
+
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -219,6 +223,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
 
         checkBTState();
         getBondedDevices();
+         currentData = new Double[4];
 
     }
 
@@ -342,17 +347,17 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
                 DataPoint output3 = new DataPoint(time,output[3]);
 
                 if(time<xRange) {
-                    series0.appendData(output0, false, 1000);
-                    series1.appendData(output1, false, 1000);
-                    series2.appendData(output2, false, 1000);
-                    series3.appendData(output3, false, 1000);
+                    series0.appendData(output0, false, 500);
+                    series1.appendData(output1, false, 500);
+                    series2.appendData(output2, false, 500);
+                    series3.appendData(output3, false, 500);
 
                 }
                 else {
-                    series0.appendData(output0, true, 1000);
-                    series1.appendData(output1, true, 1000);
-                    series2.appendData(output2, true, 1000);
-                    series3.appendData(output3, true, 1000);
+                    series0.appendData(output0, true, 500);
+                    series1.appendData(output1, true, 500);
+                    series2.appendData(output2, true, 500);
+                    series3.appendData(output3, true, 500);
                 }
 
                 time++;
@@ -529,28 +534,46 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
      */
     private boolean isThresholdBiggerThanAverage(double threshold, int seriesNumber) {
         Iterator<DataPoint> compValues;
-        if (seriesNumber == 0)
-            compValues = series0.getValues(time - smoothing, time + 1);
-        else if (seriesNumber == 1)
-            compValues = series1.getValues(time - smoothing, time + 1);
-        else if (seriesNumber == 2)
-            compValues = series2.getValues(time - smoothing, time + 1);
-        else
-            compValues = series3.getValues(time - smoothing, time + 1);
+        Log.w(TAG, "Threshold: " + threshold);
+
+        if (seriesNumber == 0) {
+            compValues = series0.getValues(time - smoothing, time );
+            Log.w(TAG, "  Series 0 ");
+        }
+        else if (seriesNumber == 1) {
+            compValues = series1.getValues(time - smoothing, time );
+            Log.w(TAG, "  Series 1 ");
+        }
+        else if (seriesNumber == 2) {
+            compValues = series2.getValues(time - smoothing, time );
+            Log.w(TAG, "  Series 2 ");
+        }
+        else {
+            compValues = series3.getValues(time - smoothing, time );
+            Log.w(TAG, "  Series 3 ");
+        }
         double sum = 0;
         while (compValues.hasNext()) {
             DataPoint tempData = compValues.next();
+            Log.w(TAG, "  Data point:  " + tempData.getY());
             sum = sum + tempData.getY();
         }
+        Log.w(TAG, "         Sum:  " + sum);
+        Log.w(TAG, " Smoothing  " + smoothing);
+
         double average;
         if (time < smoothing) {
             average = sum / time;
+            Log.w(TAG, "  Average: " + average);
         } else {
-            average = sum / smoothing;
+            average = sum / ((double)smoothing+1);
+            Log.w(TAG, "  Average: " + average);
         }
         if (threshold > average) {
+            Log.w(TAG, "True ");
             return true;
         } else {
+            Log.w(TAG, "False ");
             return false;
         }
     }
@@ -612,9 +635,6 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
     }
 
 
-
-
-
     private void connectBT()
     {
 
@@ -632,7 +652,14 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
                         case 1:
                             String writeMessage = new String(writeBuf);
                             writeMessage = writeMessage.substring(begin, end);
-                            Toast.makeText(mainActivity,writeMessage, Toast.LENGTH_LONG).show();
+                            getDoublesScanner = new Scanner(writeMessage);
+                            for(int k = 0;k<4;k++) {
+                                if (getDoublesScanner.hasNextDouble()) {
+                                    currentData[k] = getDoublesScanner.nextDouble();
+                                }
+                            }
+
+                            addDataManagement(currentData);
                             break;
                     }
                 }
@@ -644,7 +671,69 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         }
     }
 
+public void addDataManagement(Double[] output)
+{
+    if (output[0] != null && output[1] != null && output[2] != null && output[3] != null) {
+        zero.setText(output[0].toString());
+        one.setText(output[1].toString());
+        two.setText(output[2].toString());
+        three.setText(output[3].toString());
 
+
+        DataPoint output0 = new DataPoint(time, output[0]);
+        DataPoint output1 = new DataPoint(time, output[1]);
+        DataPoint output2 = new DataPoint(time, output[2]);
+        DataPoint output3 = new DataPoint(time, output[3]);
+
+        if (time < xRange) {
+            series0.appendData(output0, false, 300);
+            series1.appendData(output1, false, 300);
+            series2.appendData(output2, false, 300);
+            series3.appendData(output3, false, 300);
+
+        } else {
+            series0.appendData(output0, true, 300);
+            series1.appendData(output1, true, 300);
+            series2.appendData(output2, true, 300);
+            series3.appendData(output3, true, 300);
+        }
+        time++;
+
+        TextView textZeroData = (TextView) findViewById(R.id.DisplayValue0);
+        TextView textOneData = (TextView) findViewById(R.id.DisplayValue1);
+        TextView textTwoData = (TextView) findViewById(R.id.DisplayValue2);
+        TextView textThreeData = (TextView) findViewById(R.id.DisplayValue3);
+
+        threshold = Double.parseDouble(settings.getString("THRESHOLD", "1.5"));
+        smoothing = Integer.parseInt(settings.getString("SMOOTHING", "10"));
+
+
+        if (isThresholdBiggerThanAverage(threshold, 0)) {
+            textZeroData.setBackgroundColor(Color.GREEN);
+        } else {
+            textZeroData.setBackgroundColor(Color.RED);
+        }
+
+        if (isThresholdBiggerThanAverage(threshold, 1)) {
+            textOneData.setBackgroundColor(Color.GREEN);
+        } else {
+            textOneData.setBackgroundColor(Color.RED);
+        }
+
+        if (isThresholdBiggerThanAverage(threshold, 2)) {
+
+            textTwoData.setBackgroundColor(Color.GREEN);
+        } else {
+            textTwoData.setBackgroundColor(Color.RED);
+        }
+        if (isThresholdBiggerThanAverage(threshold, 3)) {
+
+            textThreeData.setBackgroundColor(Color.GREEN);
+        } else {
+            textThreeData.setBackgroundColor(Color.RED);
+        }
+    }
+}
 
     /**
      * Activates when the app is resumed.

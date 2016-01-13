@@ -31,8 +31,6 @@ public class BlueConnectThread extends Thread {
             btSocket.connect();
             BlueConnectedThread btConnectedThread = new BlueConnectedThread(btSocket,btHandler);
             btConnectedThread.start();
-            String ast = "*";
-            btConnectedThread.write(ast.getBytes());
         } catch (IOException connectException) {
             try {
                 btSocket.close();
