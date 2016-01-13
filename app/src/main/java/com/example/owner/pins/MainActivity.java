@@ -167,8 +167,8 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         series2.setColor(Color.BLUE);
         series3.setColor(Color.BLACK);
 
-        graph.getGridLabelRenderer().setNumVerticalLabels(15);
-        graph.getGridLabelRenderer().setNumHorizontalLabels(20);
+        graph.getGridLabelRenderer().setNumVerticalLabels(10);
+        graph.getGridLabelRenderer().setNumHorizontalLabels(10);
         graph.getLegendRenderer().setVisible(true);
 
         zero = (TextView) findViewById(R.id.DisplayValue0);
@@ -538,42 +538,32 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
 
         if (seriesNumber == 0) {
             compValues = series0.getValues(time - smoothing, time );
-            Log.w(TAG, "  Series 0 ");
         }
         else if (seriesNumber == 1) {
             compValues = series1.getValues(time - smoothing, time );
-            Log.w(TAG, "  Series 1 ");
         }
         else if (seriesNumber == 2) {
             compValues = series2.getValues(time - smoothing, time );
-            Log.w(TAG, "  Series 2 ");
         }
         else {
             compValues = series3.getValues(time - smoothing, time );
-            Log.w(TAG, "  Series 3 ");
         }
         double sum = 0;
         while (compValues.hasNext()) {
             DataPoint tempData = compValues.next();
-            Log.w(TAG, "  Data point:  " + tempData.getY());
             sum = sum + tempData.getY();
         }
-        Log.w(TAG, "         Sum:  " + sum);
-        Log.w(TAG, " Smoothing  " + smoothing);
+
 
         double average;
         if (time < smoothing) {
             average = sum / time;
-            Log.w(TAG, "  Average: " + average);
         } else {
             average = sum / ((double)smoothing+1);
-            Log.w(TAG, "  Average: " + average);
         }
         if (threshold > average) {
-            Log.w(TAG, "True ");
             return true;
         } else {
-            Log.w(TAG, "False ");
             return false;
         }
     }
