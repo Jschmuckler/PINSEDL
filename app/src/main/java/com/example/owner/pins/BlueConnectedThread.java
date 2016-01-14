@@ -4,36 +4,43 @@ import android.bluetooth.BluetoothSocket;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Socket;
+
 import android.os.Handler;
+import android.util.Log;
 
 public class BlueConnectedThread extends Thread implements Runnable {
-    private final BluetoothSocket btSocket;
-    private final InputStream btInStream;
-    private final OutputStream btOutStream;
+    private final String TAG = "BlueConnectedThread";
+    private BluetoothSocket btSocket;
+    private  InputStream btInStream;
+    private  OutputStream btOutStream;
     private final Handler btHandler;
 
-    public BlueConnectedThread(BluetoothSocket socket, Handler btHandler) {
-        btSocket = socket;
+    public BlueConnectedThread(Handler btHandler) {
+
         this.btHandler = btHandler;
+    }
+
+
+
+    public void run() {
         InputStream tmpIn = null;
         OutputStream tmpOut = null;
-
         try {
-            tmpIn = socket.getInputStream();
-            tmpOut = socket.getOutputStream();
+            tmpIn = btSocket.getInputStream();
+            tmpOut = btSocket.getOutputStream();
         }
         catch (IOException e) {
             e.printStackTrace();
         }
         btInStream = tmpIn;
         btOutStream = tmpOut;
-    }
 
-    public void run() {
+
         byte[] buffer = new byte[1024];
         int begin = 0;
         int bytes = 0;
-        while (true) {
+        while (btSocket.isConnected()) {
             try {
                 bytes += btInStream.read(buffer, bytes, buffer.length - bytes);
                 for (int i = begin; i < bytes; i++) {
@@ -47,6 +54,7 @@ public class BlueConnectedThread extends Thread implements Runnable {
                     }
                 }
             } catch (IOException e) {
+                Log.w(TAG,"Stopped connected thread");
                 break;
             }
         }
@@ -59,9 +67,16 @@ public class BlueConnectedThread extends Thread implements Runnable {
         }
     }
 
+    public void setBtSocket(BluetoothSocket btSocket)
+    {
+        this.btSocket = btSocket;
+    }
+
     public void cancel() {
         try {
-            btSocket.close();
+            if(btSocket!=null){
+            btSocket.close();}
+
         } catch (IOException e) {
         }
     }

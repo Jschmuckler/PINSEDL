@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:seekbarunit="http://schemas.android.com/apk/res-auto">
 
     <EditTextPreference
         android:key="THRESHOLD"
@@ -20,10 +21,12 @@
         />
 
     <EditTextPreference
-        android:key="ADDRESS"
-        android:title="IP Address"
-        android:summary="Enter the IP Address of the Arduino Device"
-        android:inputType="phone"
+        android:key="THICKNESS"
+        android:title="Thickness"
+        android:summary="Enter the thickness to make your lines"
+        android:inputType="number"
+        android:maxLength="2"
+        android:defaultValue="10"
         />
 
 </PreferenceScreen>

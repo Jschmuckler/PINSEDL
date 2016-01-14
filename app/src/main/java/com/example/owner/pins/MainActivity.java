@@ -1,5 +1,6 @@
 package com.example.owner.pins;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -13,6 +14,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -30,6 +32,9 @@ import com.jjoe64.graphview.series.DataPointInterface;
 import com.jjoe64.graphview.series.LineGraphSeries;
 import com.jjoe64.graphview.series.OnDataPointTapListener;
 import com.jjoe64.graphview.series.Series;
+
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Iterator;
 import java.util.Scanner;
 import java.util.Set;
@@ -40,7 +45,7 @@ import java.util.Set;
  */
 
 
-public class MainActivity extends AppCompatActivity implements AsyncResponse {
+public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
     SharedPreferences settings;
@@ -59,17 +64,27 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
     int smoothing;
     Double threshold;
     Switch mySwitch;
+    MainActivity oldMain;
     boolean switchPreviouslyActiveFlag;
     GraphView graph;
     private MainActivity mainActivity = this;
     boolean[] isSeriesActive = new boolean[4];
-    private ResponseReceiver receiver;
+    //private ResponseReceiver receiver;
     private BluetoothAdapter btAdapter;
     private BluetoothDevice btDevice;
     Handler btHandler;
     Scanner getDoublesScanner;
     Double[] currentData;
+    BlueConnectedThread btConnectedThread;
+    int thickness;
 
+
+    boolean screenRotated = false;
+    int k;
+
+
+    private static final int REQUEST_CONNECT_DEVICE_INSECURE = 1;
+    private static final int BLUETOOTH_ACTIVATE = 2;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,6 +93,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         xRange = 20;
         smoothing = Integer.parseInt(settings.getString("SMOOTHING", "10"));
         threshold = Double.parseDouble(settings.getString("THRESHOLD", "1.5"));
+        thickness = Integer.parseInt(settings.getString("THICKNESS", "5"));
         url = "http://" + settings.getString("ADDRESS", "");
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -93,7 +109,6 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
                     mySwitch.setText("ON");
                     active = isChecked;
                     Log.w(TAG, "Active is " + active);
-                    Log.d(TAG, "Active is " + active);
                     connectBT();
 
                     //getAndSetData();
@@ -101,14 +116,19 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
                 } else {
                     mySwitch.setText("OFF");
                     active = isChecked;
+                    if(btConnectedThread!=null){
+                    btConnectedThread.cancel();}
                     Log.w(TAG, "Active is " + active);
-                    Log.d(TAG, "Active is " + active);
                 }
             }
         });
 
-        MainActivity oldMain = (MainActivity) getLastCustomNonConfigurationInstance();
+         oldMain = (MainActivity) getLastCustomNonConfigurationInstance();
         graph = (GraphView) findViewById(R.id.graph);
+
+
+
+
 
         if (oldMain != null) {
             series0 = oldMain.series0;
@@ -123,11 +143,23 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
                 graph.getViewport().setMinX(0);
                 graph.getViewport().setMaxX(xRange);
             }
+
+            btConnectedThread = oldMain.btConnectedThread;
+            k = oldMain.k;
+
             time = oldMain.time;
 
-            mySwitch.setChecked(oldMain.switchPreviouslyActiveFlag);
+
+            zero = (TextView) findViewById(R.id.DisplayValue0);
+            one = (TextView) findViewById(R.id.DisplayValue1);
+            two = (TextView) findViewById(R.id.DisplayValue2);
+            three = (TextView) findViewById(R.id.DisplayValue3);
+            Log.w(TAG, oldMain.switchPreviouslyActiveFlag + "is the old value before rotating");
+            //mySwitch.setChecked(oldMain.switchPreviouslyActiveFlag);
 
             isSeriesActive = oldMain.isSeriesActive;
+
+
         } else {
             series0 = new LineGraphSeries<DataPoint>(new DataPoint[]{});
             series1 = new LineGraphSeries<DataPoint>(new DataPoint[]{});
@@ -142,10 +174,21 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
             series2.setTitle("Two");
             series3.setTitle("Three");
 
+            k = 0;
 
+            zero = (TextView) findViewById(R.id.DisplayValue0);
+            one = (TextView) findViewById(R.id.DisplayValue1);
+            two = (TextView) findViewById(R.id.DisplayValue2);
+            three = (TextView) findViewById(R.id.DisplayValue3);
+
+
+
+            series0.setThickness(15);
             for (int k = 0; k < 4; k++) {
                 isSeriesActive[k] = true;
             }
+
+
         }
 
         graph.getViewport().setScrollable(true);
@@ -171,16 +214,13 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         graph.getGridLabelRenderer().setNumHorizontalLabels(10);
         graph.getLegendRenderer().setVisible(true);
 
-        zero = (TextView) findViewById(R.id.DisplayValue0);
-        one = (TextView) findViewById(R.id.DisplayValue1);
-        two = (TextView) findViewById(R.id.DisplayValue2);
-        three = (TextView) findViewById(R.id.DisplayValue3);
-        zero.setText("0");
-        one.setText("1");
-        two.setText("2");
-        three.setText("3");
+        setLineThickness();
+
+        mySwitch.setClickable(false);
+        Log.w(TAG, "just set clickable to false");
 
 
+        checkBTState();
 
 
 
@@ -216,15 +256,23 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
             }
         });
 
-        IntentFilter filter = new IntentFilter("response");
+        /*IntentFilter filter = new IntentFilter("response");
         filter.addCategory(Intent.CATEGORY_DEFAULT);
         receiver = new ResponseReceiver();
-        registerReceiver(receiver, filter);
+        registerReceiver(receiver, filter);*/
 
-        checkBTState();
-        getBondedDevices();
          currentData = new Double[4];
 
+    }
+
+    @Override
+    public void onDestroy(){
+super.onDestroy();
+        Log.w(TAG, "In the onDestroy");
+        if(btConnectedThread!=null){
+        btConnectedThread.cancel();}
+        //mySwitch.setChecked(false);
+        screenRotated = true;
     }
 
     @Override
@@ -311,9 +359,8 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
                 }
                 break;
 
-            case R.id.action_resetArduino:
-                RestartArduino restart = new RestartArduino();
-                restart.execute(url);
+            case R.id.action_bluetooth:
+                checkBTState();
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -322,7 +369,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
     /**
      * Class:Receive the broadcast back from the thread, extract the data and set it to the graph and labels.
      */
-    public class ResponseReceiver extends BroadcastReceiver {
+  /*  public class ResponseReceiver extends BroadcastReceiver {
         public String response = "response";
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -406,7 +453,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
                 getAndSetData();
             }
         }
-    }
+    }*/
 
     /**
      * Allows the state to be saved when the app is paused or stopped
@@ -423,7 +470,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
      * then calls another async task to begin to make a network connection.
      * @param output A Double array that contains all of the data the asynctask has collected from the network
      */
-    @Override
+  /*  @Override
     public void processFinish(Double[] output) {
         Log.w(TAG, "Process Finished");
         if (output[0] != null && output[1] != null && output[2] != null && output[3] != null) {
@@ -510,7 +557,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         asyncGetData.delegate = this;
         handler.postDelayed(taskCanceler, 12000);
         asyncGetData.execute(url);*/
-    }
+    //}
 
     /**
      * Clears all of the data that has been recording to the graph
@@ -534,7 +581,6 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
      */
     private boolean isThresholdBiggerThanAverage(double threshold, int seriesNumber) {
         Iterator<DataPoint> compValues;
-        Log.w(TAG, "Threshold: " + threshold);
 
         if (seriesNumber == 0) {
             compValues = series0.getValues(time - smoothing, time );
@@ -573,10 +619,10 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
     @Override
     public void onPause() {
         super.onPause();
-        try{unregisterReceiver(receiver);}
-        catch (IllegalArgumentException e){}
+        //try{unregisterReceiver(receiver);}
+        //catch (IllegalArgumentException e){}
         switchPreviouslyActiveFlag = mySwitch.isChecked();
-        mySwitch.setChecked(false);
+        //mySwitch.setChecked(false);
     }
 
     private void checkBTState() {
@@ -592,17 +638,25 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         } else {
             if (btAdapter.isEnabled()) {
                 Log.d(TAG, "...Bluetooth is enabled...");
+                getBondedDevices();
             } else {
                 //Prompt user to turn on Bluetooth
                 Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                startActivityForResult(enableBtIntent, 1);
+                startActivityForResult(enableBtIntent, BLUETOOTH_ACTIVATE);
             }
         }
     }
 
     private void getBondedDevices()
     {
-        Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
+        if (btAdapter.isEnabled()) {
+            Intent deviceList = new Intent(this, DeviceListActivity.class);
+
+            startActivityForResult(deviceList, REQUEST_CONNECT_DEVICE_INSECURE);
+        }
+
+
+      /*  Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
         String deviceList = " ";
         if (pairedDevices.size() > 0) {
             for (BluetoothDevice device : pairedDevices) {
@@ -619,9 +673,37 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
                 }
             }
         }
-        Toast.makeText(this, deviceList, Toast.LENGTH_LONG).show();
+        Toast.makeText(this, deviceList, Toast.LENGTH_LONG).show();*/
 
 
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch(requestCode) {
+            case REQUEST_CONNECT_DEVICE_INSECURE:
+                if(resultCode == Activity.RESULT_OK){
+                    String address = data.getExtras().getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
+                    btDevice = btAdapter.getRemoteDevice(address);
+                    Toast.makeText(this, btDevice.getName() + " is ready.", Toast.LENGTH_SHORT).show();
+                    mySwitch.setClickable(true);
+                    if(oldMain != null)
+                        if(oldMain.mySwitch.isChecked())
+                        {
+                            mySwitch.setChecked(false);
+                            mySwitch.setChecked(true);
+
+                        }
+                }
+                if(resultCode == Activity.RESULT_CANCELED)
+                {
+                    checkBTState();
+                }
+                break;
+
+            case BLUETOOTH_ACTIVATE:
+                checkBTState();
+                break;
+        }
     }
 
 
@@ -655,8 +737,8 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
                 }
             };
 
-
-                BlueConnectThread btConnectThread = new BlueConnectThread(btDevice, btAdapter,btHandler);
+                 btConnectedThread = new BlueConnectedThread(btHandler);
+                BlueConnectThread btConnectThread = new BlueConnectThread(btDevice, btAdapter,btHandler,btConnectedThread);
             btConnectThread.start();
         }
     }
@@ -664,63 +746,86 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
 public void addDataManagement(Double[] output)
 {
     if (output[0] != null && output[1] != null && output[2] != null && output[3] != null) {
-        zero.setText(output[0].toString());
-        one.setText(output[1].toString());
-        two.setText(output[2].toString());
-        three.setText(output[3].toString());
 
+        if (screenRotated) {
 
-        DataPoint output0 = new DataPoint(time, output[0]);
-        DataPoint output1 = new DataPoint(time, output[1]);
-        DataPoint output2 = new DataPoint(time, output[2]);
-        DataPoint output3 = new DataPoint(time, output[3]);
+            k++;
 
-        if (time < xRange) {
-            series0.appendData(output0, false, 300);
-            series1.appendData(output1, false, 300);
-            series2.appendData(output2, false, 300);
-            series3.appendData(output3, false, 300);
-
-        } else {
-            series0.appendData(output0, true, 300);
-            series1.appendData(output1, true, 300);
-            series2.appendData(output2, true, 300);
-            series3.appendData(output3, true, 300);
+            if (k == 10) {
+                screenRotated = false;
+                Log.w(TAG, "Old text: " + zero.getText().toString() + " New text: " + output[0].toString());
+                k = 0;
+            }
         }
-        time++;
+        // Log.w(TAG,"Old text: "+zero.getText().toString() +" New text: " + output[0].toString());
 
-        TextView textZeroData = (TextView) findViewById(R.id.DisplayValue0);
+        NumberFormat formatter = new DecimalFormat("#0.00");
+        if (output[0] != null && output[1] != null && output[2] != null && output[3] != null) {
+            if (zero != null && one != null && two != null && three != null) {
+                zero.setText(formatter.format(output[0]).toString());
+                one.setText(formatter.format(output[1]).toString());
+                two.setText(formatter.format(output[2]).toString());
+                three.setText(formatter.format(output[3]).toString());
+
+
+                DataPoint output0 = new DataPoint(time, output[0]);
+                DataPoint output1 = new DataPoint(time, output[1]);
+                DataPoint output2 = new DataPoint(time, output[2]);
+                DataPoint output3 = new DataPoint(time, output[3]);
+
+                if (time < xRange) {
+                    series0.appendData(output0, false, 300);
+                    series1.appendData(output1, false, 300);
+                    series2.appendData(output2, false, 300);
+                    series3.appendData(output3, false, 300);
+
+                } else {
+                    series0.appendData(output0, true, 300);
+                    series1.appendData(output1, true, 300);
+                    series2.appendData(output2, true, 300);
+                    series3.appendData(output3, true, 300);
+                }
+                time++;
+
+        /*TextView textZeroData = (TextView) findViewById(R.id.DisplayValue0);
         TextView textOneData = (TextView) findViewById(R.id.DisplayValue1);
         TextView textTwoData = (TextView) findViewById(R.id.DisplayValue2);
-        TextView textThreeData = (TextView) findViewById(R.id.DisplayValue3);
+        TextView textThreeData = (TextView) findViewById(R.id.DisplayValue3);*/
 
-        threshold = Double.parseDouble(settings.getString("THRESHOLD", "1.5"));
-        smoothing = Integer.parseInt(settings.getString("SMOOTHING", "10"));
+                threshold = Double.parseDouble(settings.getString("THRESHOLD", "1.5"));
+                smoothing = Integer.parseInt(settings.getString("SMOOTHING", "10"));
 
 
-        if (isThresholdBiggerThanAverage(threshold, 0)) {
-            textZeroData.setBackgroundColor(Color.GREEN);
-        } else {
-            textZeroData.setBackgroundColor(Color.RED);
+                if (isThresholdBiggerThanAverage(threshold, 0)) {
+                    zero.setBackgroundColor(Color.GREEN);
+                } else {
+                    zero.setBackgroundColor(Color.RED);
+                }
+
+                if (isThresholdBiggerThanAverage(threshold, 1)) {
+                    one.setBackgroundColor(Color.GREEN);
+                } else {
+                    one.setBackgroundColor(Color.RED);
+                }
+
+                if (isThresholdBiggerThanAverage(threshold, 2)) {
+
+                    two.setBackgroundColor(Color.GREEN);
+                } else {
+                    two.setBackgroundColor(Color.RED);
+                }
+                if (isThresholdBiggerThanAverage(threshold, 3)) {
+
+                    three.setBackgroundColor(Color.GREEN);
+                } else {
+                    three.setBackgroundColor(Color.RED);
+                }
+            } else {
+                Log.w(TAG, "Text fields are null");
+            }
         }
-
-        if (isThresholdBiggerThanAverage(threshold, 1)) {
-            textOneData.setBackgroundColor(Color.GREEN);
-        } else {
-            textOneData.setBackgroundColor(Color.RED);
-        }
-
-        if (isThresholdBiggerThanAverage(threshold, 2)) {
-
-            textTwoData.setBackgroundColor(Color.GREEN);
-        } else {
-            textTwoData.setBackgroundColor(Color.RED);
-        }
-        if (isThresholdBiggerThanAverage(threshold, 3)) {
-
-            textThreeData.setBackgroundColor(Color.GREEN);
-        } else {
-            textThreeData.setBackgroundColor(Color.RED);
+        else{
+            Log.w(TAG, "Getting blank data");
         }
     }
 }
@@ -732,19 +837,29 @@ public void addDataManagement(Double[] output)
     @Override
     public void onResume() {
         super.onResume();
-        String urlToValidate = settings.getString("ADDRESS", "");
+        setLineThickness();
+        /*String urlToValidate = settings.getString("ADDRESS", "");
         IPAddressValidate IPValidator = new IPAddressValidate();
         if (IPValidator.validate(urlToValidate)) {
-            mySwitch.setClickable(true);
             url = "http://" + settings.getString("ADDRESS", "");
         } else {
-            mySwitch.setClickable(false);
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
             alertDialogBuilder
                     .setTitle("MALFORMED IP")
                     .setMessage("The IP Address entered is not valid. Please enter a valid address.")
                     .setCancelable(true)
                     .show();
-        }
+        }*/
+    }
+
+
+    private void setLineThickness()
+    {
+    int thickness = Integer.parseInt(settings.getString("THICKNESS", "10"));
+
+        series0.setThickness(thickness);
+        series1.setThickness(thickness);
+        series2.setThickness(thickness);
+        series3.setThickness(thickness);
     }
 }

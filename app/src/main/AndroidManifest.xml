@@ -24,6 +24,13 @@
         <activity android:name=".SettingsActivity" />
         <service android:enabled="true" android:name=".ThreadedDownloadHTTP"/>
 
+
+        <activity
+            android:name=".DeviceListActivity"
+            android:configChanges="orientation|keyboardHidden"
+            android:label="@string/select_device"
+            android:theme="@android:style/Theme.Holo.Dialog"/>
+
     </application>
 
 </manifest>

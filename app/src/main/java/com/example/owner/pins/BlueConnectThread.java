@@ -13,23 +13,27 @@ public class BlueConnectThread extends Thread {
     private final BluetoothDevice btDevice;
     private final BluetoothAdapter btAdapter;
     private final Handler btHandler;
+    private final BlueConnectedThread btConnectedThread;
     private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
 
-    public BlueConnectThread(BluetoothDevice device,BluetoothAdapter btAdapter,Handler btHandler) {
+    public BlueConnectThread(BluetoothDevice device,BluetoothAdapter btAdapter,Handler btHandler,BlueConnectedThread btConnectedThread) {
         BluetoothSocket tmp = null;
         btDevice = device;
         this.btAdapter = btAdapter;
         this.btHandler = btHandler;
+        this.btConnectedThread = btConnectedThread;
         try {
             tmp = device.createRfcommSocketToServiceRecord(MY_UUID);
         } catch (IOException e) { }
         btSocket = tmp;
     }
     public void run() {
+
         btAdapter.cancelDiscovery();
+
         try {
             btSocket.connect();
-            BlueConnectedThread btConnectedThread = new BlueConnectedThread(btSocket,btHandler);
+            btConnectedThread.setBtSocket(btSocket);
             btConnectedThread.start();
         } catch (IOException connectException) {
             try {

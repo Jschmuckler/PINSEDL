@@ -13,10 +13,10 @@
         android:title="@string/action_about"
         app:showAsAction="never" />
     <item
-        android:id="@+id/action_resetArduino"
+        android:id="@+id/action_bluetooth"
         android:orderInCategory="100"
-        android:title="@string/action_reset"
-        app:showAsAction="never" />
+        android:title="@string/action_bluetooth"
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_eraser"
         android:title="clear"
