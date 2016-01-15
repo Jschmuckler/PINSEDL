@@ -29,7 +29,8 @@
         android:layout_width="match_parent"
         android:layout_height="80sp"
         android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true">
+        android:layout_alignParentEnd="true"
+        >
 
 
         <TextView
@@ -39,12 +40,12 @@
             android:id="@+id/DisplayValue0"
             android:layout_marginLeft="15sp"
             android:layout_marginStart="15sp"
-            android:text="0"/>
+            android:text=""/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/DisplayValue1"
-            android:text="1"
+            android:text=""
             android:textSize="30sp"
             android:layout_alignParentTop="true"
             android:layout_toRightOf="@+id/DisplayValue0"
@@ -56,7 +57,7 @@
             android:textSize="30sp"
             android:layout_height="wrap_content"
             android:id="@+id/DisplayValue2"
-            android:text="2"
+            android:text=""
             android:layout_marginLeft="15sp"
             android:layout_marginStart="15sp"
             android:layout_alignParentTop="true"
@@ -67,7 +68,7 @@
             android:textSize="30sp"
             android:layout_height="wrap_content"
             android:id="@+id/DisplayValue3"
-            android:text="3"
+            android:text=""
             android:layout_marginLeft="15sp"
             android:layout_marginStart="15sp"
             android:layout_alignParentTop="true"

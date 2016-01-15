@@ -22,6 +22,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.LegendRenderer;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.DataPointInterface;
 import com.jjoe64.graphview.series.LineGraphSeries;
@@ -63,7 +64,6 @@ public class MainActivity extends AppCompatActivity {
 
     private Handler btHandler;
     private BlueConnectedThread btConnectedThread;
-    private Scanner getDoublesScanner;
     private Double units;
     private int time = 0;
 
@@ -126,7 +126,6 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         setUnits();
         setLineThickness();
-
     }
 
     @Override
@@ -160,14 +159,35 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.action_about:
                 String newline = System.getProperty("line.separator");
-                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-                alertDialogBuilder
+                AlertDialog.Builder alertDialogBuilderAbout = new AlertDialog.Builder(this);
+                alertDialogBuilderAbout
                         .setTitle("About")
-                        .setMessage("PINS is designed for the reading and analysis of a four input signal system." + newline + "Author: Jordan Schmuckler" + newline + "EDL")
+                        .setMessage("PINS is designed for the reading and analysis of a four input signal system." + newline +
+                                "To start, select a bluetooth device that is writing a serial output of four numbers through bluetooth in the form of 0 0 0 0# ." +
+                                newline + newline + "Select your desired settings for the threshold, smoothing, thickness of the output lines, and the units to measure data in. " +
+                                "Do not worry, as these can be adjusted at any time. Finally turn the switch from off to on. That's it! In a few seconds data should start to stream." + newline + newline +
+                                "You can tap on any line to see its values. Navigating to old data simply takes pressing and dragging back on the graph while the data is stopped. " + newline +
+                                "To zoom our or get a closer look at the data just pinch and reverse pinch the graph."
+                                + newline + newline + "Author: Jordan Schmuckler" + newline + "EDL")
                         .setCancelable(true)
                         .show();
                 break;
 
+            case R.id.action_help:
+                String newlineA = System.getProperty("line.separator");
+                AlertDialog.Builder alertDialogBuilderHelp = new AlertDialog.Builder(this);
+                alertDialogBuilderHelp
+                        .setTitle("Help")
+                        .setMessage("Not receiving data?" + newlineA +"Try turning the switch off, and then clicking Connect Bluetooth in the drop down menu to reconnect." +
+                                " You may have lost your connection. Then turn the switch back on. Be patient, as it may take a moment to connect."
+                                + newlineA + newlineA +"What does threshold mean?" + newlineA +
+                                "The threshold is the value the graph data is being compared to. If the voltage is getting too high the text off that value will be highlighted in red."
+                                + newlineA + newlineA + "What is smoothing?" + newlineA +
+                                "Smoothing represents the number of datapoints to be averaged before reporting that the readings are out of the desired bounds." +
+                                " Use a higher number for smoothing when there is more static in your signal.")
+                        .setCancelable(true)
+                        .show();
+                break;
             case R.id.action_eraser:
                 clearData();
                 break;
@@ -204,7 +224,6 @@ public class MainActivity extends AppCompatActivity {
     public Object onRetainCustomNonConfigurationInstance() {
         return this;
     }
-
 
     /**
      * Clears all of the data that has been recording to the graph
@@ -308,7 +327,6 @@ public class MainActivity extends AppCompatActivity {
             Intent deviceList = new Intent(this, DeviceListActivity.class);
             startActivityForResult(deviceList, REQUEST_CONNECT_DEVICE_INSECURE);
         }
-
     }
 
     /**
@@ -396,6 +414,7 @@ public class MainActivity extends AppCompatActivity {
         graph.getViewport().setMinX(0);
         graph.getViewport().setMaxX(X_RANGE);
 
+
         series0.setTitle("Zero");
         series1.setTitle("One");
         series2.setTitle("Two");
@@ -440,6 +459,7 @@ public class MainActivity extends AppCompatActivity {
         graph.getGridLabelRenderer().setNumVerticalLabels(10);
         graph.getGridLabelRenderer().setNumHorizontalLabels(10);
         graph.getLegendRenderer().setVisible(true);
+        graph.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.TOP);
 
         setLineThickness();
     }
@@ -498,7 +518,6 @@ public class MainActivity extends AppCompatActivity {
                         if (oldMain.mySwitch.isChecked()) {
                             mySwitch.setChecked(false);
                             mySwitch.setChecked(true);
-
                         }
                 }
                 if (resultCode == Activity.RESULT_CANCELED) {
@@ -530,9 +549,10 @@ public class MainActivity extends AppCompatActivity {
 
                     switch (msg.what) {
                         case 1:
+
                             String writeMessage = new String(writeBuf);
                             writeMessage = writeMessage.substring(begin, end);
-                            getDoublesScanner = new Scanner(writeMessage);
+                            Scanner getDoublesScanner = new Scanner(writeMessage);
                             for (int k = 0; k < 4; k++) {
                                 if (getDoublesScanner.hasNextDouble()) {
                                     currentData[k] = getDoublesScanner.nextDouble();
@@ -603,28 +623,28 @@ public class MainActivity extends AppCompatActivity {
                     time++;
 
                     if (isThresholdBiggerThanAverage(0)) {
-                        zero.setBackgroundColor(Color.GREEN);
+                        zero.setBackgroundColor(Color.TRANSPARENT);
                     } else {
-                        zero.setBackgroundColor(Color.RED);
+                        zero.setBackgroundColor(Color.parseColor("#FF6347"));
                     }
 
                     if (isThresholdBiggerThanAverage(1)) {
-                        one.setBackgroundColor(Color.GREEN);
+                        one.setBackgroundColor(Color.TRANSPARENT);
                     } else {
-                        one.setBackgroundColor(Color.RED);
+                        one.setBackgroundColor(Color.parseColor("#FF6347"));
                     }
 
                     if (isThresholdBiggerThanAverage(2)) {
 
-                        two.setBackgroundColor(Color.GREEN);
+                        two.setBackgroundColor(Color.TRANSPARENT);
                     } else {
-                        two.setBackgroundColor(Color.RED);
+                        two.setBackgroundColor(Color.parseColor("#FF6347"));
                     }
                     if (isThresholdBiggerThanAverage(3)) {
 
-                        three.setBackgroundColor(Color.GREEN);
+                        three.setBackgroundColor(Color.TRANSPARENT);
                     } else {
-                        three.setBackgroundColor(Color.RED);
+                        three.setBackgroundColor(Color.parseColor("#FF6347"));
                     }
                 } else {
                     Log.w(TAG, "Text fields are null");

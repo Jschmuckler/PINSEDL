@@ -10,7 +10,8 @@
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay">
+        android:theme="@style/AppTheme.AppBarOverlay"
+        android:background="@color/grey">
 
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
@@ -28,6 +29,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="175dp"
         android:id="@+id/graph"
+        android:background="@color/grey"
         />
 
 </android.support.design.widget.CoordinatorLayout>
