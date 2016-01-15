@@ -182,6 +182,7 @@ public class MainActivity extends AppCompatActivity {
         series2.setColor(Color.BLUE);
         series3.setColor(Color.BLACK);
 
+
         graph.getGridLabelRenderer().setNumVerticalLabels(10);
         graph.getGridLabelRenderer().setNumHorizontalLabels(10);
         graph.getLegendRenderer().setVisible(true);
@@ -387,9 +388,8 @@ public class MainActivity extends AppCompatActivity {
             threshold = Double.parseDouble(settings.getString("THRESHOLD", "1.5"));
         }
         threshold = threshold * units;
-
-        Log.w(TAG, "Threshold: " + threshold);
         double average;
+
         if (time < smoothing) {
             average = sum / time;
         } else {
@@ -558,10 +558,10 @@ public class MainActivity extends AppCompatActivity {
 
             if (output[0] != null && output[1] != null && output[2] != null && output[3] != null) {
                 if (zero != null && one != null && two != null && three != null) {
-                    zero.setText(formatter.format(output[0]).toString());
-                    one.setText(formatter.format(output[1]).toString());
-                    two.setText(formatter.format(output[2]).toString());
-                    three.setText(formatter.format(output[3]).toString());
+                    zero.setText("0: " + formatter.format(output[0]).toString());
+                    one.setText("1: " + formatter.format(output[1]).toString());
+                    two.setText("2: " + formatter.format(output[2]).toString());
+                    three.setText("3: " + formatter.format(output[3]).toString());
 
 
                     DataPoint output0 = new DataPoint(time, output[0]);
@@ -582,11 +582,6 @@ public class MainActivity extends AppCompatActivity {
                         series3.appendData(output3, true, 300);
                     }
                     time++;
-
-                    //threshold = Double.parseDouble(settings.getString("THRESHOLD", "1.5"));
-                    //threshold = threshold*units;
-                    //smoothing = Integer.parseInt(settings.getString("SMOOTHING", "10"));
-
 
                     if (isThresholdBiggerThanAverage(0)) {
                         zero.setBackgroundColor(Color.GREEN);

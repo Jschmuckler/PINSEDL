@@ -18,8 +18,9 @@
         android:layout_height="wrap_content"
         android:text="On"
         android:id="@+id/active"
+        android:layout_marginTop="45sp"
         android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        />
 
 
 
@@ -27,9 +28,8 @@
     <GridLayout
         android:layout_width="match_parent"
         android:layout_height="80sp"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true">
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true">
 
 
         <TextView
