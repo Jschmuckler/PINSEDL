@@ -5,7 +5,7 @@
     <EditTextPreference
         android:key="THRESHOLD"
         android:title="Threshold"
-        android:summary="Enter the threshold to keep the voltage below"
+        android:summary="Enter the threshold to keep the voltage below\nFunctions according to app units"
         android:inputType="numberDecimal"
         android:maxLength="6"
         android:defaultValue="1.5"
@@ -32,8 +32,10 @@
     <ListPreference
         android:key="UNIT"
         android:title ="Units"
-        android:summary="Select the units for the app\nClears previous data"
+        android:summary="Select the units for the upcoming data\nClears previous data"
         android:entries="@array/UnitNames"
         android:entryValues="@array/UnitConversions"
         android:defaultValue="1"/>
+
+
 </PreferenceScreen>

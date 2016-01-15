@@ -9,10 +9,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
-import android.preference.ListPreference;
-import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -45,52 +42,41 @@ import java.util.Scanner;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
-    SharedPreferences settings;
-    TextView zero;
-    TextView one;
-    TextView two;
-    TextView three;
-    public String url = "http://192.168.1.154";
-    boolean active = false;
-    private Handler handler = new Handler(Looper.getMainLooper());
-    private TaskCanceler taskCanceler;
-    private DataPoint[] values0 = new DataPoint[50];
-    private int xRange;
+    private MainActivity context = this;
+    private MainActivity oldMain;
+
+    private GraphView graph;
     private LineGraphSeries<DataPoint> series0, series1, series2, series3;
-    int time = 0;
-    int smoothing;
-    Double threshold;
-    Switch mySwitch;
-    MainActivity oldMain;
-    boolean switchPreviouslyActiveFlag;
-    GraphView graph;
-    private MainActivity mainActivity = this;
-    boolean[] isSeriesActive = new boolean[4];
     private BluetoothAdapter btAdapter;
     private BluetoothDevice btDevice;
-    Handler btHandler;
-    Scanner getDoublesScanner;
-    Double[] currentData;
-    BlueConnectedThread btConnectedThread;
-    int thickness;
-    Double units;
 
-    boolean screenRotated = false;
-    int k;
+    private SharedPreferences settings;
+    private TextView zero;
+    private TextView one;
+    private TextView two;
+    private TextView three;
 
+    private Switch mySwitch;
+    private boolean switchPreviouslyActiveFlag;
+    private boolean active = false;
+    private boolean[] isSeriesActive = new boolean[4];
+
+    private Handler btHandler;
+    private BlueConnectedThread btConnectedThread;
+    private Scanner getDoublesScanner;
+    private Double units;
+    private int time = 0;
 
     private static final int REQUEST_CONNECT_DEVICE_INSECURE = 1;
     private static final int BLUETOOTH_ACTIVATE = 2;
+    private final int SMOOTHING_DEFAULT = 10;
+    private final double THRESHOLD_DEFAULT = 1.5;
+    private final int X_RANGE = 20;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         settings = PreferenceManager.getDefaultSharedPreferences(this);
-        xRange = 20;
-        smoothing = Integer.parseInt(settings.getString("SMOOTHING", "10"));
-        threshold = Double.parseDouble(settings.getString("THRESHOLD", "1.5"));
-        thickness = Integer.parseInt(settings.getString("THICKNESS", "5"));
-        url = "http://" + settings.getString("ADDRESS", "");
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -106,8 +92,6 @@ public class MainActivity extends AppCompatActivity {
                     active = isChecked;
                     Log.w(TAG, "Active is " + active);
                     connectBT();
-
-                    //getAndSetData();
 
                 } else {
                     mySwitch.setText("OFF");
@@ -129,16 +113,15 @@ public class MainActivity extends AppCompatActivity {
             series2 = oldMain.series2;
             series3 = oldMain.series3;
 
-            if (oldMain.time > xRange) {
-                graph.getViewport().setMinX(oldMain.time - xRange);
+            if (oldMain.time > X_RANGE) {
+                graph.getViewport().setMinX(oldMain.time - X_RANGE);
                 graph.getViewport().setMaxX(oldMain.time + 1);
             } else {
                 graph.getViewport().setMinX(0);
-                graph.getViewport().setMaxX(xRange);
+                graph.getViewport().setMaxX(X_RANGE);
             }
 
             btConnectedThread = oldMain.btConnectedThread;
-            k = oldMain.k;
 
             time = oldMain.time;
 
@@ -148,7 +131,6 @@ public class MainActivity extends AppCompatActivity {
             two = (TextView) findViewById(R.id.DisplayValue2);
             three = (TextView) findViewById(R.id.DisplayValue3);
             Log.w(TAG, oldMain.switchPreviouslyActiveFlag + "is the old value before rotating");
-            //mySwitch.setChecked(oldMain.switchPreviouslyActiveFlag);
 
             isSeriesActive = oldMain.isSeriesActive;
 
@@ -160,14 +142,13 @@ public class MainActivity extends AppCompatActivity {
             series3 = new LineGraphSeries<DataPoint>(new DataPoint[]{});
 
             graph.getViewport().setMinX(0);
-            graph.getViewport().setMaxX(xRange);
+            graph.getViewport().setMaxX(X_RANGE);
 
             series0.setTitle("Zero");
             series1.setTitle("One");
             series2.setTitle("Two");
             series3.setTitle("Three");
 
-            k = 0;
 
             zero = (TextView) findViewById(R.id.DisplayValue0);
             one = (TextView) findViewById(R.id.DisplayValue1);
@@ -175,7 +156,6 @@ public class MainActivity extends AppCompatActivity {
             three = (TextView) findViewById(R.id.DisplayValue3);
 
 
-            series0.setThickness(15);
             for (int k = 0; k < 4; k++) {
                 isSeriesActive[k] = true;
             }
@@ -216,41 +196,31 @@ public class MainActivity extends AppCompatActivity {
         series0.setOnDataPointTapListener(new OnDataPointTapListener() {
             @Override
             public void onTap(Series series, DataPointInterface dataPoint) {
-                //zero.setText("" + dataPoint);
-                Toast.makeText(mainActivity, "Series0: " + dataPoint, Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Series0: " + dataPoint, Toast.LENGTH_SHORT).show();
             }
         });
 
         series1.setOnDataPointTapListener(new OnDataPointTapListener() {
             @Override
             public void onTap(Series series, DataPointInterface dataPoint) {
-                //zero.setText("" + dataPoint);
-                Toast.makeText(mainActivity, "Series1: " + dataPoint, Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Series1: " + dataPoint, Toast.LENGTH_SHORT).show();
             }
         });
 
         series2.setOnDataPointTapListener(new OnDataPointTapListener() {
             @Override
             public void onTap(Series series, DataPointInterface dataPoint) {
-                //zero.setText("" + dataPoint);
-                Toast.makeText(mainActivity, "Series2: " + dataPoint, Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Series2: " + dataPoint, Toast.LENGTH_SHORT).show();
             }
         });
 
         series3.setOnDataPointTapListener(new OnDataPointTapListener() {
             @Override
             public void onTap(Series series, DataPointInterface dataPoint) {
-                //zero.setText("" + dataPoint);
-                Toast.makeText(mainActivity, "Series3: " + dataPoint, Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Series3: " + dataPoint, Toast.LENGTH_SHORT).show();
             }
         });
 
-        /*IntentFilter filter = new IntentFilter("response");
-        filter.addCategory(Intent.CATEGORY_DEFAULT);
-        receiver = new ResponseReceiver();
-        registerReceiver(receiver, filter);*/
-
-        currentData = new Double[4];
 
     }
 
@@ -261,8 +231,6 @@ public class MainActivity extends AppCompatActivity {
         if (btConnectedThread != null) {
             btConnectedThread.cancel();
         }
-        //mySwitch.setChecked(false);
-        screenRotated = true;
     }
 
     @Override
@@ -374,7 +342,7 @@ public class MainActivity extends AppCompatActivity {
      */
     public void clearData() {
         graph.getViewport().setMinX(0);
-        graph.getViewport().setMaxX(xRange);
+        graph.getViewport().setMaxX(X_RANGE);
 
         series0.resetData(new DataPoint[]{});
         series1.resetData(new DataPoint[]{});
@@ -387,12 +355,16 @@ public class MainActivity extends AppCompatActivity {
      * Averages the number of data points specified in settings, and compares the average value to the threshold passed in.
      * If the minimum number of data points do not exist then it compares only those that do exist.
      *
-     * @param threshold    The threshold that is being compared to
      * @param seriesNumber The number of the series whos values should be evaluated
      * @return true if the threshold is larger than the overall average, false if the overall average is larger than the threshold
      */
-    private boolean isThresholdBiggerThanAverage(double threshold, int seriesNumber) {
+    private boolean isThresholdBiggerThanAverage(int seriesNumber) {
         Iterator<DataPoint> compValues;
+        String smoothingSt = settings.getString("SMOOTHING", "10");
+        int smoothing = SMOOTHING_DEFAULT;
+        if (!(smoothingSt.equals(""))) {
+            smoothing = Integer.parseInt(settings.getString("SMOOTHING", "10"));
+        }
 
         if (seriesNumber == 0) {
             compValues = series0.getValues(time - smoothing, time);
@@ -409,7 +381,14 @@ public class MainActivity extends AppCompatActivity {
             sum = sum + tempData.getY();
         }
 
+        String thresholdSt = settings.getString("THRESHOLD", "1.5");
+        double threshold = THRESHOLD_DEFAULT;
+        if (!(thresholdSt.equals(""))) {
+            threshold = Double.parseDouble(settings.getString("THRESHOLD", "1.5"));
+        }
+        threshold = threshold * units;
 
+        Log.w(TAG, "Threshold: " + threshold);
         double average;
         if (time < smoothing) {
             average = sum / time;
@@ -435,16 +414,23 @@ public class MainActivity extends AppCompatActivity {
         //mySwitch.setChecked(false);
     }
 
+    /**
+     * Checks that the device supports bluetooth.
+     * If it does, checks that bluetooth is inabled.
+     * If not, requests bluetooth be started.
+     * If so, calls getBondedDevices() method.
+     */
     private void checkBTState() {
-        // Check for Bluetooth support and then check to make sure it is turned on
 
-        // Emulator doesn't support Bluetooth and will return null
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         if (btAdapter == null) {
-// Device does not support Bluetooth
-        }
-        if (btAdapter == null) {
             Log.w(TAG, "Device does not support bluetooth, abort.");
+            new AlertDialog.Builder(this)
+                    .setTitle("Device does not support bluetooth.")
+                    .setMessage("Device does not have bluetooth and therefore cannot use this application.")
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .setCancelable(false)
+                    .show();
         } else {
             if (btAdapter.isEnabled()) {
                 Log.d(TAG, "...Bluetooth is enabled...");
@@ -457,6 +443,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Double checks the user has not turned of bluetooth after turning it on.
+     * Starts the DeviceListActivity in order to find devices for the user to then select.
+     */
     private void getBondedDevices() {
         if (btAdapter.isEnabled()) {
             Intent deviceList = new Intent(this, DeviceListActivity.class);
@@ -465,6 +455,15 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+
+    /**
+     * On the callback from activities:
+     * REQUEST_CONNECT_DEVICE_INSECURE:
+     * If a device was selected sets btDevice to that device
+     * If no device was selected call checkBTState() to re-initialize user selection of a device.
+     * BLUETOOTH_ACTIVATE:
+     * Call checkBTState to check if the user has now turned on bluetooth or not.
+     */
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
@@ -492,7 +491,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
+    /**
+     * Creates a BlueConnectedThread to connect the bluetooth device and start collecting data.
+     * Uses a handler to receive the data back and call to add the data with addDataManagement.
+     */
     private void connectBT() {
 
         if (btDevice != null) {
@@ -503,6 +505,7 @@ public class MainActivity extends AppCompatActivity {
                     byte[] writeBuf = (byte[]) msg.obj;
                     int begin = (int) msg.arg1;
                     int end = (int) msg.arg2;
+                    Double[] currentData = new Double[4];
 
                     switch (msg.what) {
                         case 1:
@@ -527,11 +530,15 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Adds the data to the graph.
+     * Manages the labels zero-three in both value and color.
+     */
     public void addDataManagement(Double[] output) {
-        NumberFormat formatter =new DecimalFormat("#0.00");
+        NumberFormat formatter = new DecimalFormat("#0.00");
 
         if (output[0] != null && output[1] != null && output[2] != null && output[3] != null) {
-            for(int k = 0;k<4;k++) {
+            for (int k = 0; k < 4; k++) {
                 output[k] = output[k] * units;
                 switch (units.toString()) {
                     case "1000.0":
@@ -547,7 +554,7 @@ public class MainActivity extends AppCompatActivity {
                         break;
                 }
 
-                }
+            }
 
             if (output[0] != null && output[1] != null && output[2] != null && output[3] != null) {
                 if (zero != null && one != null && two != null && three != null) {
@@ -562,7 +569,7 @@ public class MainActivity extends AppCompatActivity {
                     DataPoint output2 = new DataPoint(time, output[2]);
                     DataPoint output3 = new DataPoint(time, output[3]);
 
-                    if (time < xRange) {
+                    if (time < X_RANGE) {
                         series0.appendData(output0, false, 300);
                         series1.appendData(output1, false, 300);
                         series2.appendData(output2, false, 300);
@@ -576,30 +583,30 @@ public class MainActivity extends AppCompatActivity {
                     }
                     time++;
 
-                    threshold = Double.parseDouble(settings.getString("THRESHOLD", "1.5"));
-                    threshold = threshold*units;
-                    smoothing = Integer.parseInt(settings.getString("SMOOTHING", "10"));
+                    //threshold = Double.parseDouble(settings.getString("THRESHOLD", "1.5"));
+                    //threshold = threshold*units;
+                    //smoothing = Integer.parseInt(settings.getString("SMOOTHING", "10"));
 
 
-                    if (isThresholdBiggerThanAverage(threshold, 0)) {
+                    if (isThresholdBiggerThanAverage(0)) {
                         zero.setBackgroundColor(Color.GREEN);
                     } else {
                         zero.setBackgroundColor(Color.RED);
                     }
 
-                    if (isThresholdBiggerThanAverage(threshold, 1)) {
+                    if (isThresholdBiggerThanAverage(1)) {
                         one.setBackgroundColor(Color.GREEN);
                     } else {
                         one.setBackgroundColor(Color.RED);
                     }
 
-                    if (isThresholdBiggerThanAverage(threshold, 2)) {
+                    if (isThresholdBiggerThanAverage(2)) {
 
                         two.setBackgroundColor(Color.GREEN);
                     } else {
                         two.setBackgroundColor(Color.RED);
                     }
-                    if (isThresholdBiggerThanAverage(threshold, 3)) {
+                    if (isThresholdBiggerThanAverage(3)) {
 
                         three.setBackgroundColor(Color.GREEN);
                     } else {
@@ -625,14 +632,13 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-
-
-    private void setUnits()
-    {
-        clearData();
-        units = Double.parseDouble(settings.getString("UNIT","1.0"));
-        switch (units.toString())
-        {
+    /**
+     * Manages the units variable for updating what units the app should be in based on
+     * shared settings.
+     */
+    private void setUnits() {
+        units = Double.parseDouble(settings.getString("UNIT", "1.0"));
+        switch (units.toString()) {
             case "1000.0":
                 graph.getGridLabelRenderer().setVerticalAxisTitle("Millivolts");
                 break;
@@ -648,8 +654,16 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Manages resetting the line thickness based on shared
+     * settings
+     */
     private void setLineThickness() {
-        int thickness = Integer.parseInt(settings.getString("THICKNESS", "10"));
+        String thicknessSt = settings.getString("THICKNESS", "10");
+        int thickness = 10;
+        if (!(thicknessSt.equals(""))) {
+            thickness = Integer.parseInt(settings.getString("THICKNESS", "10"));
+        }
 
         series0.setThickness(thickness);
         series1.setThickness(thickness);
