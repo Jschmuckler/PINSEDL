@@ -81,148 +81,23 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        mySwitch = (Switch) findViewById(R.id.active);
-        mySwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-
-                if (isChecked) {
-                    mySwitch.setText("ON");
-                    active = isChecked;
-                    Log.w(TAG, "Active is " + active);
-                    connectBT();
-
-                } else {
-                    mySwitch.setText("OFF");
-                    active = isChecked;
-                    if (btConnectedThread != null) {
-                        btConnectedThread.cancel();
-                    }
-                    Log.w(TAG, "Active is " + active);
-                }
-            }
-        });
+        initializeOnOffSwitch();
 
         oldMain = (MainActivity) getLastCustomNonConfigurationInstance();
         graph = (GraphView) findViewById(R.id.graph);
 
         if (oldMain != null) {
-            series0 = oldMain.series0;
-            series1 = oldMain.series1;
-            series2 = oldMain.series2;
-            series3 = oldMain.series3;
-
-            if (oldMain.time > X_RANGE) {
-                graph.getViewport().setMinX(oldMain.time - X_RANGE);
-                graph.getViewport().setMaxX(oldMain.time + 1);
-            } else {
-                graph.getViewport().setMinX(0);
-                graph.getViewport().setMaxX(X_RANGE);
-            }
-
-            btConnectedThread = oldMain.btConnectedThread;
-
-            time = oldMain.time;
-
-
-            zero = (TextView) findViewById(R.id.DisplayValue0);
-            one = (TextView) findViewById(R.id.DisplayValue1);
-            two = (TextView) findViewById(R.id.DisplayValue2);
-            three = (TextView) findViewById(R.id.DisplayValue3);
-            Log.w(TAG, oldMain.switchPreviouslyActiveFlag + "is the old value before rotating");
-
-            isSeriesActive = oldMain.isSeriesActive;
-
-
+            manageScreenRotationResets();
         } else {
-            series0 = new LineGraphSeries<DataPoint>(new DataPoint[]{});
-            series1 = new LineGraphSeries<DataPoint>(new DataPoint[]{});
-            series2 = new LineGraphSeries<DataPoint>(new DataPoint[]{});
-            series3 = new LineGraphSeries<DataPoint>(new DataPoint[]{});
-
-            graph.getViewport().setMinX(0);
-            graph.getViewport().setMaxX(X_RANGE);
-
-            series0.setTitle("Zero");
-            series1.setTitle("One");
-            series2.setTitle("Two");
-            series3.setTitle("Three");
-
-
-            zero = (TextView) findViewById(R.id.DisplayValue0);
-            one = (TextView) findViewById(R.id.DisplayValue1);
-            two = (TextView) findViewById(R.id.DisplayValue2);
-            three = (TextView) findViewById(R.id.DisplayValue3);
-
-
-            for (int k = 0; k < 4; k++) {
-                isSeriesActive[k] = true;
-            }
-
-
+            firstTimeOnlyInitializations();
         }
-
-        graph.getViewport().setScrollable(true);
-        graph.getViewport().setScalable(true);
-
-        graph.getGridLabelRenderer().setHorizontalAxisTitle("Points");
-        setUnits();
-        if (isSeriesActive[0])
-            graph.addSeries(series0);
-        if (isSeriesActive[1])
-            graph.addSeries(series1);
-        if (isSeriesActive[2])
-            graph.addSeries(series2);
-        if (isSeriesActive[3])
-            graph.addSeries(series3);
-
-        series0.setColor(Color.RED);
-        series1.setColor(Color.GREEN);
-        series2.setColor(Color.BLUE);
-        series3.setColor(Color.BLACK);
-
-
-        graph.getGridLabelRenderer().setNumVerticalLabels(10);
-        graph.getGridLabelRenderer().setNumHorizontalLabels(10);
-        graph.getLegendRenderer().setVisible(true);
-
-        setLineThickness();
+        assignGraphAttributes();
 
         mySwitch.setClickable(false);
         Log.w(TAG, "just set clickable to false");
 
         checkBTState();
-
-        series0.setOnDataPointTapListener(new OnDataPointTapListener() {
-            @Override
-            public void onTap(Series series, DataPointInterface dataPoint) {
-                Toast.makeText(context, "Series0: " + dataPoint, Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        series1.setOnDataPointTapListener(new OnDataPointTapListener() {
-            @Override
-            public void onTap(Series series, DataPointInterface dataPoint) {
-                Toast.makeText(context, "Series1: " + dataPoint, Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        series2.setOnDataPointTapListener(new OnDataPointTapListener() {
-            @Override
-            public void onTap(Series series, DataPointInterface dataPoint) {
-                Toast.makeText(context, "Series2: " + dataPoint, Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        series3.setOnDataPointTapListener(new OnDataPointTapListener() {
-            @Override
-            public void onTap(Series series, DataPointInterface dataPoint) {
-                Toast.makeText(context, "Series3: " + dataPoint, Toast.LENGTH_SHORT).show();
-            }
-        });
-
-
+        assignOnClickSeriesListeners();
     }
 
     @Override
@@ -232,6 +107,26 @@ public class MainActivity extends AppCompatActivity {
         if (btConnectedThread != null) {
             btConnectedThread.cancel();
         }
+    }
+
+    /**
+     * Saves the neccesary values when the activity is paused.
+     */
+    @Override
+    public void onPause() {
+        super.onPause();
+        switchPreviouslyActiveFlag = mySwitch.isChecked();
+    }
+
+    /**
+     * Activates when the app is resumed.
+     */
+    @Override
+    public void onResume() {
+        super.onResume();
+        setUnits();
+        setLineThickness();
+
     }
 
     @Override
@@ -251,11 +146,9 @@ public class MainActivity extends AppCompatActivity {
      * @param item item that has been selected
      * @return true the action has been handled, false the action has not been handled
      */
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
         switch (id) {
@@ -280,43 +173,19 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case R.id.action_series_zero:
-                if (isSeriesActive[0]) {
-                    graph.removeSeries(series0);
-                    isSeriesActive[0] = false;
-                } else {
-                    graph.addSeries(series0);
-                    isSeriesActive[0] = true;
-                }
+                toggleSeriesOnOff(0, series0);
                 break;
 
             case R.id.action_series_one:
-                if (isSeriesActive[1]) {
-                    graph.removeSeries(series1);
-                    isSeriesActive[1] = false;
-                } else {
-                    graph.addSeries(series1);
-                    isSeriesActive[1] = true;
-                }
+                toggleSeriesOnOff(1, series1);
                 break;
 
             case R.id.action_series_two:
-                if (isSeriesActive[2]) {
-                    graph.removeSeries(series2);
-                    isSeriesActive[2] = false;
-                } else {
-                    graph.addSeries(series2);
-                    isSeriesActive[2] = true;
-                }
+                toggleSeriesOnOff(2, series2);
                 break;
 
             case R.id.action_series_three:
-                if (isSeriesActive[3]) {
-                    graph.removeSeries(series3);
-                    isSeriesActive[3] = false;
-                } else {
-                    graph.addSeries(series3);
-                    isSeriesActive[3] = true;
-                }
+                toggleSeriesOnOff(3, series3);
                 break;
 
             case R.id.action_bluetooth:
@@ -325,7 +194,6 @@ public class MainActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-
 
     /**
      * Allows the state to be saved when the app is paused or stopped
@@ -341,7 +209,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Clears all of the data that has been recording to the graph
      */
-    public void clearData() {
+    private void clearData() {
         graph.getViewport().setMinX(0);
         graph.getViewport().setMaxX(X_RANGE);
 
@@ -403,18 +271,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Saves the neccesary values when the activity is paused.
-     */
-    @Override
-    public void onPause() {
-        super.onPause();
-        //try{unregisterReceiver(receiver);}
-        //catch (IllegalArgumentException e){}
-        switchPreviouslyActiveFlag = mySwitch.isChecked();
-        //mySwitch.setChecked(false);
-    }
-
-    /**
      * Checks that the device supports bluetooth.
      * If it does, checks that bluetooth is inabled.
      * If not, requests bluetooth be started.
@@ -450,10 +306,176 @@ public class MainActivity extends AppCompatActivity {
     private void getBondedDevices() {
         if (btAdapter.isEnabled()) {
             Intent deviceList = new Intent(this, DeviceListActivity.class);
-
             startActivityForResult(deviceList, REQUEST_CONNECT_DEVICE_INSECURE);
         }
 
+    }
+
+    /**
+     * Saves variables from the old activity to the new activty to continue
+     * on proccessing after screen rotation or other pauses.
+     */
+    private void manageScreenRotationResets() {
+        series0 = oldMain.series0;
+        series1 = oldMain.series1;
+        series2 = oldMain.series2;
+        series3 = oldMain.series3;
+
+        if (oldMain.time > X_RANGE) {
+            graph.getViewport().setMinX(oldMain.time - X_RANGE);
+            graph.getViewport().setMaxX(oldMain.time + 1);
+        } else {
+            graph.getViewport().setMinX(0);
+            graph.getViewport().setMaxX(X_RANGE);
+        }
+
+        btConnectedThread = oldMain.btConnectedThread;
+
+        time = oldMain.time;
+
+
+        zero = (TextView) findViewById(R.id.DisplayValue0);
+        one = (TextView) findViewById(R.id.DisplayValue1);
+        two = (TextView) findViewById(R.id.DisplayValue2);
+        three = (TextView) findViewById(R.id.DisplayValue3);
+        Log.w(TAG, oldMain.switchPreviouslyActiveFlag + "is the old value before rotating");
+
+        isSeriesActive = oldMain.isSeriesActive;
+    }
+
+    /**
+     * Toggles the series passed to it on or off.
+     *
+     * @param seriesNum The number associated with the series being passed in
+     * @param series    The reference to the series to be toggled
+     */
+    private void toggleSeriesOnOff(int seriesNum, Series series) {
+        if (isSeriesActive[seriesNum]) {
+            graph.removeSeries(series);
+            isSeriesActive[seriesNum] = false;
+        } else {
+            graph.addSeries(series);
+            isSeriesActive[seriesNum] = true;
+        }
+    }
+
+    public void initializeOnOffSwitch() {
+        mySwitch = (Switch) findViewById(R.id.active);
+        mySwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+                if (isChecked) {
+                    mySwitch.setText("ON");
+                    active = isChecked;
+                    Log.w(TAG, "Active is " + active);
+                    connectBT();
+
+                } else {
+                    mySwitch.setText("OFF");
+                    active = isChecked;
+                    if (btConnectedThread != null) {
+                        btConnectedThread.cancel();
+                    }
+                    Log.w(TAG, "Active is " + active);
+                }
+            }
+        });
+    }
+
+    /**
+     * Initializes all variables that need to be initialized only when the activity
+     * has not existed previously within this run.
+     */
+    private void firstTimeOnlyInitializations() {
+        series0 = new LineGraphSeries<DataPoint>(new DataPoint[]{});
+        series1 = new LineGraphSeries<DataPoint>(new DataPoint[]{});
+        series2 = new LineGraphSeries<DataPoint>(new DataPoint[]{});
+        series3 = new LineGraphSeries<DataPoint>(new DataPoint[]{});
+
+        graph.getViewport().setMinX(0);
+        graph.getViewport().setMaxX(X_RANGE);
+
+        series0.setTitle("Zero");
+        series1.setTitle("One");
+        series2.setTitle("Two");
+        series3.setTitle("Three");
+
+
+        zero = (TextView) findViewById(R.id.DisplayValue0);
+        one = (TextView) findViewById(R.id.DisplayValue1);
+        two = (TextView) findViewById(R.id.DisplayValue2);
+        three = (TextView) findViewById(R.id.DisplayValue3);
+
+
+        for (int k = 0; k < 4; k++) {
+            isSeriesActive[k] = true;
+        }
+    }
+
+    /**
+     * Sets up the graphview.
+     */
+    private void assignGraphAttributes() {
+        graph.getViewport().setScrollable(true);
+        graph.getViewport().setScalable(true);
+
+        graph.getGridLabelRenderer().setHorizontalAxisTitle("Points");
+        setUnits();
+        if (isSeriesActive[0])
+            graph.addSeries(series0);
+        if (isSeriesActive[1])
+            graph.addSeries(series1);
+        if (isSeriesActive[2])
+            graph.addSeries(series2);
+        if (isSeriesActive[3])
+            graph.addSeries(series3);
+
+        series0.setColor(Color.RED);
+        series1.setColor(Color.GREEN);
+        series2.setColor(Color.BLUE);
+        series3.setColor(Color.BLACK);
+
+
+        graph.getGridLabelRenderer().setNumVerticalLabels(10);
+        graph.getGridLabelRenderer().setNumHorizontalLabels(10);
+        graph.getLegendRenderer().setVisible(true);
+
+        setLineThickness();
+    }
+
+    /**
+     * Gives listeners to each individual series so they display their data
+     * at whatever point the user taps on.
+     */
+    private void assignOnClickSeriesListeners() {
+        series0.setOnDataPointTapListener(new OnDataPointTapListener() {
+            @Override
+            public void onTap(Series series, DataPointInterface dataPoint) {
+                Toast.makeText(context, "Series0: " + dataPoint, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        series1.setOnDataPointTapListener(new OnDataPointTapListener() {
+            @Override
+            public void onTap(Series series, DataPointInterface dataPoint) {
+                Toast.makeText(context, "Series1: " + dataPoint, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        series2.setOnDataPointTapListener(new OnDataPointTapListener() {
+            @Override
+            public void onTap(Series series, DataPointInterface dataPoint) {
+                Toast.makeText(context, "Series2: " + dataPoint, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        series3.setOnDataPointTapListener(new OnDataPointTapListener() {
+            @Override
+            public void onTap(Series series, DataPointInterface dataPoint) {
+                Toast.makeText(context, "Series3: " + dataPoint, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     /**
@@ -464,7 +486,6 @@ public class MainActivity extends AppCompatActivity {
      * BLUETOOTH_ACTIVATE:
      * Call checkBTState to check if the user has now turned on bluetooth or not.
      */
-
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             case REQUEST_CONNECT_DEVICE_INSECURE:
@@ -553,7 +574,6 @@ public class MainActivity extends AppCompatActivity {
                         formatter = new DecimalFormat("#0.00000");
                         break;
                 }
-
             }
 
             if (output[0] != null && output[1] != null && output[2] != null && output[3] != null) {
@@ -562,7 +582,6 @@ public class MainActivity extends AppCompatActivity {
                     one.setText("1: " + formatter.format(output[1]).toString());
                     two.setText("2: " + formatter.format(output[2]).toString());
                     three.setText("3: " + formatter.format(output[3]).toString());
-
 
                     DataPoint output0 = new DataPoint(time, output[0]);
                     DataPoint output1 = new DataPoint(time, output[1]);
@@ -614,17 +633,6 @@ public class MainActivity extends AppCompatActivity {
                 Log.w(TAG, "Getting blank data");
             }
         }
-    }
-
-    /**
-     * Activates when the app is resumed.
-     */
-    @Override
-    public void onResume() {
-        super.onResume();
-        setUnits();
-        setLineThickness();
-
     }
 
     /**
