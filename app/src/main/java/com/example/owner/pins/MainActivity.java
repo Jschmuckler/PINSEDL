@@ -4,17 +4,13 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -37,7 +33,6 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Iterator;
 import java.util.Scanner;
-import java.util.Set;
 
 /**
  * @author Jordan Schmuckler
@@ -69,7 +64,6 @@ public class MainActivity extends AppCompatActivity {
     GraphView graph;
     private MainActivity mainActivity = this;
     boolean[] isSeriesActive = new boolean[4];
-    //private ResponseReceiver receiver;
     private BluetoothAdapter btAdapter;
     private BluetoothDevice btDevice;
     Handler btHandler;
@@ -125,10 +119,6 @@ public class MainActivity extends AppCompatActivity {
 
          oldMain = (MainActivity) getLastCustomNonConfigurationInstance();
         graph = (GraphView) findViewById(R.id.graph);
-
-
-
-
 
         if (oldMain != null) {
             series0 = oldMain.series0;
@@ -219,10 +209,7 @@ public class MainActivity extends AppCompatActivity {
         mySwitch.setClickable(false);
         Log.w(TAG, "just set clickable to false");
 
-
         checkBTState();
-
-
 
         series0.setOnDataPointTapListener(new OnDataPointTapListener() {
             @Override
@@ -366,94 +353,6 @@ super.onDestroy();
         return super.onOptionsItemSelected(item);
     }
 
-    /**
-     * Class:Receive the broadcast back from the thread, extract the data and set it to the graph and labels.
-     */
-  /*  public class ResponseReceiver extends BroadcastReceiver {
-        public String response = "response";
-        @Override
-        public void onReceive(Context context, Intent intent) {
-
-            Log.w(TAG, "Process Finished");
-            Double[] output =
-                    {       intent.getDoubleExtra("zero",-1),
-                            intent.getDoubleExtra("one",-1),
-                            intent.getDoubleExtra("two",-1),
-                            intent.getDoubleExtra("three",-1),};
-
-            if (output[0] != -1 && output[1] != -1 && output[2] != -1 && output[3] != -1) {
-
-                zero.setText(output[0].toString());
-                one.setText(output[1].toString());
-                two.setText(output[2].toString());
-                three.setText(output[3].toString());
-                Log.w(TAG, "Set the text");
-                DataPoint output0 = new DataPoint(time,output[0]);
-                DataPoint output1 = new DataPoint(time,output[1]);
-                DataPoint output2 = new DataPoint(time,output[2]);
-                DataPoint output3 = new DataPoint(time,output[3]);
-
-                if(time<xRange) {
-                    series0.appendData(output0, false, 500);
-                    series1.appendData(output1, false, 500);
-                    series2.appendData(output2, false, 500);
-                    series3.appendData(output3, false, 500);
-
-                }
-                else {
-                    series0.appendData(output0, true, 500);
-                    series1.appendData(output1, true, 500);
-                    series2.appendData(output2, true, 500);
-                    series3.appendData(output3, true, 500);
-                }
-
-                time++;
-                //threshold,series
-                TextView textZeroData = (TextView)findViewById(R.id.DisplayValue0);
-                TextView textOneData = (TextView)findViewById(R.id.DisplayValue1);
-                TextView textTwoData = (TextView)findViewById(R.id.DisplayValue2);
-                TextView textThreeData = (TextView)findViewById(R.id.DisplayValue3);
-
-                if(isThresholdBiggerThanAverage(threshold,0))
-                {
-                    textZeroData.setBackgroundColor(Color.GREEN);
-                }
-                else{
-                    textZeroData.setBackgroundColor(Color.RED);
-                }
-
-                if(isThresholdBiggerThanAverage(threshold,1))
-                {
-                    textOneData.setBackgroundColor(Color.GREEN);
-                }
-                else{
-                    textOneData.setBackgroundColor(Color.RED);
-                }
-
-                if(isThresholdBiggerThanAverage(threshold,2))
-                {
-
-                    textTwoData.setBackgroundColor(Color.GREEN);
-                }
-                else{
-                    textTwoData.setBackgroundColor(Color.RED);
-                }
-                if(isThresholdBiggerThanAverage(threshold,3))
-                {
-
-                    textThreeData.setBackgroundColor(Color.GREEN);
-                }
-                else{
-                    textThreeData.setBackgroundColor(Color.RED);
-                }
-            }
-            if(active)
-            {
-                Log.w(TAG, "Launching a new helper");
-                getAndSetData();
-            }
-        }
-    }*/
 
     /**
      * Allows the state to be saved when the app is paused or stopped
@@ -464,100 +363,7 @@ super.onDestroy();
         return this;
     }
 
-    /**
-     * For use with the async task strategy of data collection.
-     * Assigns the data to the appropriate series on the graph and assigns the values to the appropriate text fields,
-     * then calls another async task to begin to make a network connection.
-     * @param output A Double array that contains all of the data the asynctask has collected from the network
-     */
-  /*  @Override
-    public void processFinish(Double[] output) {
-        Log.w(TAG, "Process Finished");
-        if (output[0] != null && output[1] != null && output[2] != null && output[3] != null) {
-            zero.setText(output[0].toString());
-            one.setText(output[1].toString());
-            two.setText(output[2].toString());
-            three.setText(output[3].toString());
 
-            Log.w(TAG, "Set the text");
-
-            DataPoint output0 = new DataPoint(time, output[0]);
-            DataPoint output1 = new DataPoint(time, output[1]);
-            DataPoint output2 = new DataPoint(time, output[2]);
-            DataPoint output3 = new DataPoint(time, output[3]);
-
-            if (time < xRange) {
-                series0.appendData(output0, false, 300);
-                series1.appendData(output1, false, 300);
-                series2.appendData(output2, false, 300);
-                series3.appendData(output3, false, 300);
-
-            } else {
-                series0.appendData(output0, true, 300);
-                series1.appendData(output1, true, 300);
-                series2.appendData(output2, true, 300);
-                series3.appendData(output3, true, 300);
-            }
-            time++;
-
-            TextView textZeroData = (TextView) findViewById(R.id.DisplayValue0);
-            TextView textOneData = (TextView) findViewById(R.id.DisplayValue1);
-            TextView textTwoData = (TextView) findViewById(R.id.DisplayValue2);
-            TextView textThreeData = (TextView) findViewById(R.id.DisplayValue3);
-
-            if (isThresholdBiggerThanAverage(threshold, 0)) {
-                textZeroData.setBackgroundColor(Color.GREEN);
-            } else {
-                textZeroData.setBackgroundColor(Color.RED);
-            }
-
-            if (isThresholdBiggerThanAverage(threshold, 1)) {
-                textOneData.setBackgroundColor(Color.GREEN);
-            } else {
-                textOneData.setBackgroundColor(Color.RED);
-            }
-
-            if (isThresholdBiggerThanAverage(threshold, 2)) {
-
-                textTwoData.setBackgroundColor(Color.GREEN);
-            } else {
-                textTwoData.setBackgroundColor(Color.RED);
-            }
-            if (isThresholdBiggerThanAverage(threshold, 3)) {
-
-                textThreeData.setBackgroundColor(Color.GREEN);
-            } else {
-                textThreeData.setBackgroundColor(Color.RED);
-            }
-        }
-        if (active) {
-            Log.w(TAG, "Launching a new helper");
-            getAndSetData();
-        }
-    }
-
-    public void getAndSetData() {
-        Log.w(TAG, "started getAndSetData");
-        getAndSetDataHelper();
-    }
-
-    private void getAndSetDataHelper() {
-
-        //Comment out to switch to async task
-        Intent httpDownload = new Intent(this, ThreadedDownloadHTTP.class);
-        httpDownload.putExtra("URL", url);
-        startService(httpDownload);
-
-        //uncomment to switch to Async task
-      /*  if (taskCanceler != null && handler != null) {
-            handler.removeCallbacks(taskCanceler);
-        }
-        AsyncDownloadHTTPData asyncGetData = new AsyncDownloadHTTPData();
-        taskCanceler = new TaskCanceler(asyncGetData, this);
-        asyncGetData.delegate = this;
-        handler.postDelayed(taskCanceler, 12000);
-        asyncGetData.execute(url);*/
-    //}
 
     /**
      * Clears all of the data that has been recording to the graph
@@ -655,27 +461,6 @@ super.onDestroy();
             startActivityForResult(deviceList, REQUEST_CONNECT_DEVICE_INSECURE);
         }
 
-
-      /*  Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
-        String deviceList = " ";
-        if (pairedDevices.size() > 0) {
-            for (BluetoothDevice device : pairedDevices) {
-                deviceList = deviceList + device.getName() + "/n";
-                if(device.getName().equals("Adafruit EZ-Link 80f2"))
-                {
-                    Log.w(TAG,device.getName()+ " found.");
-                btDevice = device;
-                }
-
-                else
-                {
-                    Log.w(TAG,"Adafruit EZ-Link 80f2 not found");
-                }
-            }
-        }
-        Toast.makeText(this, deviceList, Toast.LENGTH_LONG).show();*/
-
-
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -757,7 +542,6 @@ public void addDataManagement(Double[] output)
                 k = 0;
             }
         }
-        // Log.w(TAG,"Old text: "+zero.getText().toString() +" New text: " + output[0].toString());
 
         NumberFormat formatter = new DecimalFormat("#0.00");
         if (output[0] != null && output[1] != null && output[2] != null && output[3] != null) {
@@ -786,11 +570,6 @@ public void addDataManagement(Double[] output)
                     series3.appendData(output3, true, 300);
                 }
                 time++;
-
-        /*TextView textZeroData = (TextView) findViewById(R.id.DisplayValue0);
-        TextView textOneData = (TextView) findViewById(R.id.DisplayValue1);
-        TextView textTwoData = (TextView) findViewById(R.id.DisplayValue2);
-        TextView textThreeData = (TextView) findViewById(R.id.DisplayValue3);*/
 
                 threshold = Double.parseDouble(settings.getString("THRESHOLD", "1.5"));
                 smoothing = Integer.parseInt(settings.getString("SMOOTHING", "10"));
@@ -832,24 +611,12 @@ public void addDataManagement(Double[] output)
 
     /**
      * Activates when the app is resumed.
-     * Checks to ensure that the IP address from settings is not malformed/is a valid IP.
      */
     @Override
     public void onResume() {
         super.onResume();
         setLineThickness();
-        /*String urlToValidate = settings.getString("ADDRESS", "");
-        IPAddressValidate IPValidator = new IPAddressValidate();
-        if (IPValidator.validate(urlToValidate)) {
-            url = "http://" + settings.getString("ADDRESS", "");
-        } else {
-            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-            alertDialogBuilder
-                    .setTitle("MALFORMED IP")
-                    .setMessage("The IP Address entered is not valid. Please enter a valid address.")
-                    .setCancelable(true)
-                    .show();
-        }*/
+
     }
 
 
