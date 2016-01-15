@@ -21,10 +21,11 @@ public class AsyncDownloadHTTPData extends AsyncTask<String, Void, String> {
 
     private static final String TAG = "AsyncDownloadHTTPData";
     public AsyncResponse delegate = null;
-    private  Scanner scan;
+    private Scanner scan;
     private HttpURLConnection connection;
     private InputStream is;
     private BufferedReader bis;
+
     @Override
     protected String doInBackground(String... params) {
 
@@ -44,23 +45,22 @@ public class AsyncDownloadHTTPData extends AsyncTask<String, Void, String> {
             connection.connect();
             Log.w(TAG, "4 Right after connect");
 
-            try{
-            int statusCode = connection.getResponseCode();
-            Log.w(TAG, "4.05 Response code is " + statusCode);
+            try {
+                int statusCode = connection.getResponseCode();
+                Log.w(TAG, "4.05 Response code is " + statusCode);
 
-            if (statusCode / 100 != 2) {
-                Log.w(TAG, "Connection Error");
-                connection.disconnect();
-                //  Log.e(TAG, "Error-connection.getResponseCode returned " + Integer.toString(statusCode));
-                return null;
+                if (statusCode / 100 != 2) {
+                    Log.w(TAG, "Connection Error");
+                    connection.disconnect();
+                    //  Log.e(TAG, "Error-connection.getResponseCode returned " + Integer.toString(statusCode));
+                    return null;
+                }
+            } catch (EOFException e) {
+                Log.w(TAG, "EOF On the response code");
+                e.printStackTrace();
             }
-        }
-        catch (EOFException e) {
-        Log.w(TAG,"EOF On the response code");
-            e.printStackTrace();
-        }
-           // if(connection.getInputStream().available()!=0){
-             //   throw new IOException();}
+            // if(connection.getInputStream().available()!=0){
+            //   throw new IOException();}
             is = connection.getInputStream();
             Log.w(TAG, "4.1 get the InputStream");
 
@@ -78,42 +78,38 @@ public class AsyncDownloadHTTPData extends AsyncTask<String, Void, String> {
                 try {
                     //while ((bis != null) && bis.ready() && (((line = bis.readLine())) != null)) {
                     boolean reading = true;
-                    while(reading){
-                   // Log.w(TAG,"5.45 Right before bis.readLine()");
-                    if(bis.ready()) {
-                       if(((line = bis.readLine())) != null) {
-                           Log.w(TAG, "5.5 Before the append value of" + line);
-                           strNumsAll.append(line);
-                           Log.w(TAG, "5.6 After the append");
-                           reading = false;
-                       }
+                    while (reading) {
+                        // Log.w(TAG,"5.45 Right before bis.readLine()");
+                        if (bis.ready()) {
+                            if (((line = bis.readLine())) != null) {
+                                Log.w(TAG, "5.5 Before the append value of" + line);
+                                strNumsAll.append(line);
+                                Log.w(TAG, "5.6 After the append");
+                                reading = false;
+                            }
+                        } else {
+                            reading = false;
+                        }
                     }
-                        else
-                    {
-                        reading = false;
-                    }
-                    }
-                }
-                catch (Exception e)
-                {
+                } catch (Exception e) {
                     Log.w(TAG, "Catch 1 " + e);
 
-                    if(scan!=null){
-                        scan.close();}
-                    if(connection!=null){
-                        Log.w(TAG,"Connection to disconnect inside of exception");
+                    if (scan != null) {
+                        scan.close();
+                    }
+                    if (connection != null) {
+                        Log.w(TAG, "Connection to disconnect inside of exception");
                         connection.disconnect();
                         Log.w(TAG, "Connection disconnected inside of exception");
                     }
-                    if(is!=null) {
+                    if (is != null) {
                         try {
                             is.close();
                         } catch (Exception g) {
                             e.printStackTrace();
                         }
                     }
-                    if(bis!=null)
-                    {
+                    if (bis != null) {
                         try {
                             bis.close();
                         } catch (IOException g) {
@@ -125,7 +121,7 @@ public class AsyncDownloadHTTPData extends AsyncTask<String, Void, String> {
                 }
                 //while ((bytesRead = bis.read(contents)) != -1) {
                 //    strNumsAll += new String(contents, 0, bytesRead);
-               // }
+                // }
                 Log.w(TAG, "6 returning the string " + strNumsAll);
 
                 Log.w(TAG, "7 Closing bis down");
@@ -135,25 +131,25 @@ public class AsyncDownloadHTTPData extends AsyncTask<String, Void, String> {
                 connection.disconnect();
 
                 return strNumsAll.toString();
-            } catch(Exception e) {
+            } catch (Exception e) {
                 Log.w(TAG, "Catch 2 " + e);
 
-                if(scan!=null){
-                    scan.close();}
-                if(connection!=null){
-                    Log.w(TAG,"Connection to disconnect inside of exception");
+                if (scan != null) {
+                    scan.close();
+                }
+                if (connection != null) {
+                    Log.w(TAG, "Connection to disconnect inside of exception");
                     connection.disconnect();
                     Log.w(TAG, "Connection disconnected inside of exception");
                 }
-                if(is!=null) {
+                if (is != null) {
                     try {
                         is.close();
                     } catch (Exception g) {
                         e.printStackTrace();
                     }
                 }
-                if(bis!=null)
-                {
+                if (bis != null) {
                     try {
                         bis.close();
                     } catch (IOException g) {
@@ -166,14 +162,15 @@ public class AsyncDownloadHTTPData extends AsyncTask<String, Void, String> {
             Log.w(TAG, "Catch 3 " + e);
             e.printStackTrace();
 
-            if(scan!=null){
-                scan.close();}
-            if(connection!=null){
-                Log.w(TAG,"Connection to disconnect inside of exception");
+            if (scan != null) {
+                scan.close();
+            }
+            if (connection != null) {
+                Log.w(TAG, "Connection to disconnect inside of exception");
                 connection.disconnect();
                 Log.w(TAG, "Connection disconnected inside of exception");
             }
-            if(is!=null) {
+            if (is != null) {
                 try {
                     Log.w(TAG, "Trying to close is");
                     is.close();
@@ -182,8 +179,7 @@ public class AsyncDownloadHTTPData extends AsyncTask<String, Void, String> {
                     e.printStackTrace();
                 }
             }
-            if(bis!=null)
-            {
+            if (bis != null) {
                 try {
                     Log.w(TAG, "Trying to close bis");
                     bis.close();
@@ -201,7 +197,7 @@ public class AsyncDownloadHTTPData extends AsyncTask<String, Void, String> {
     @Override
     protected void onPostExecute(String result) {
         if (result != null) {
-          //  System.out.println("9 onPostExecute");
+            //  System.out.println("9 onPostExecute");
             Double[] allFourNumbers = new Double[4];
             scan = new Scanner(result);
             for (int k = 0; k < allFourNumbers.length; k++) {
@@ -215,9 +211,7 @@ public class AsyncDownloadHTTPData extends AsyncTask<String, Void, String> {
             }
             scan.close();
             delegate.processFinish(allFourNumbers);
-        }
-        else
-        {
+        } else {
             Double[] badData = new Double[4];
             delegate.processFinish(badData);
         }
@@ -227,19 +221,20 @@ public class AsyncDownloadHTTPData extends AsyncTask<String, Void, String> {
     protected void onCancelled() {
         super.onCancelled();
         Log.w(TAG, "ASYNC BEING CANCELLED onCancelled being run");
-        if(scan!=null){
-        scan.close();}
-        if(connection!=null){
-            connection.disconnect();}
-        if(is!=null) {
+        if (scan != null) {
+            scan.close();
+        }
+        if (connection != null) {
+            connection.disconnect();
+        }
+        if (is != null) {
             try {
                 is.close();
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        if(bis!=null)
-        {
+        if (bis != null) {
             try {
                 bis.close();
             } catch (IOException e) {

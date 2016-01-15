@@ -3,6 +3,7 @@ package com.example.owner.pins;
 /**
  * Created by Owner on 1/14/2016.
  */
+
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -28,7 +29,6 @@ import java.util.Set;
  * devices detected in the area after discovery. When a device is chosen
  * by the user, the MAC address of the device is sent back to the parent
  * Activity in the result Intent.
- *
  */
 public class DeviceListActivity extends Activity {
 

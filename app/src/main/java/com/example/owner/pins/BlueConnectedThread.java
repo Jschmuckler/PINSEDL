@@ -1,6 +1,7 @@
 package com.example.owner.pins;
 
 import android.bluetooth.BluetoothSocket;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -12,8 +13,8 @@ import android.util.Log;
 public class BlueConnectedThread extends Thread implements Runnable {
     private final String TAG = "BlueConnectedThread";
     private BluetoothSocket btSocket;
-    private  InputStream btInStream;
-    private  OutputStream btOutStream;
+    private InputStream btInStream;
+    private OutputStream btOutStream;
     private final Handler btHandler;
 
     public BlueConnectedThread(Handler btHandler) {
@@ -22,15 +23,13 @@ public class BlueConnectedThread extends Thread implements Runnable {
     }
 
 
-
     public void run() {
         InputStream tmpIn = null;
         OutputStream tmpOut = null;
         try {
             tmpIn = btSocket.getInputStream();
             tmpOut = btSocket.getOutputStream();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
         btInStream = tmpIn;
@@ -54,7 +53,7 @@ public class BlueConnectedThread extends Thread implements Runnable {
                     }
                 }
             } catch (IOException e) {
-                Log.w(TAG,"Stopped connected thread");
+                Log.w(TAG, "Stopped connected thread");
                 break;
             }
         }
@@ -67,15 +66,15 @@ public class BlueConnectedThread extends Thread implements Runnable {
         }
     }
 
-    public void setBtSocket(BluetoothSocket btSocket)
-    {
+    public void setBtSocket(BluetoothSocket btSocket) {
         this.btSocket = btSocket;
     }
 
     public void cancel() {
         try {
-            if(btSocket!=null){
-            btSocket.close();}
+            if (btSocket != null) {
+                btSocket.close();
+            }
 
         } catch (IOException e) {
         }

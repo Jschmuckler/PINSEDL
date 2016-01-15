@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothSocket;
 
 import java.io.IOException;
 import java.util.UUID;
+
 import android.os.Handler;
 
 public class BlueConnectThread extends Thread {
@@ -16,7 +17,7 @@ public class BlueConnectThread extends Thread {
     private final BlueConnectedThread btConnectedThread;
     private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
 
-    public BlueConnectThread(BluetoothDevice device,BluetoothAdapter btAdapter,Handler btHandler,BlueConnectedThread btConnectedThread) {
+    public BlueConnectThread(BluetoothDevice device, BluetoothAdapter btAdapter, Handler btHandler, BlueConnectedThread btConnectedThread) {
         BluetoothSocket tmp = null;
         btDevice = device;
         this.btAdapter = btAdapter;
@@ -24,9 +25,11 @@ public class BlueConnectThread extends Thread {
         this.btConnectedThread = btConnectedThread;
         try {
             tmp = device.createRfcommSocketToServiceRecord(MY_UUID);
-        } catch (IOException e) { }
+        } catch (IOException e) {
+        }
         btSocket = tmp;
     }
+
     public void run() {
 
         btAdapter.cancelDiscovery();
@@ -38,13 +41,16 @@ public class BlueConnectThread extends Thread {
         } catch (IOException connectException) {
             try {
                 btSocket.close();
-            } catch (IOException closeException) { }
+            } catch (IOException closeException) {
+            }
             return;
         }
     }
+
     public void cancel() {
         try {
             btSocket.close();
-        } catch (IOException e) { }
+        } catch (IOException e) {
+        }
     }
 }

@@ -20,6 +20,7 @@ public class ThreadedDownloadHTTP extends IntentService {
     public ThreadedDownloadHTTP() {
         super("ThreadedDownloadHTTP");
     }
+
     private final String TAG = "ThreadedDownloadHTTP";
     private Scanner scan;
     private HttpURLConnection connection;
@@ -27,6 +28,7 @@ public class ThreadedDownloadHTTP extends IntentService {
     private BufferedReader bis;
     private boolean go = true;
     private boolean sent = false;
+
     @Override
     protected void onHandleIntent(Intent intent) {
 
@@ -52,7 +54,7 @@ public class ThreadedDownloadHTTP extends IntentService {
                 go = false;
             }
 
-            if(go) {
+            if (go) {
                 is = connection.getInputStream();
                 bis = new BufferedReader(new InputStreamReader(is));
                 Log.w(TAG, "5 Just made bis");
@@ -74,22 +76,22 @@ public class ThreadedDownloadHTTP extends IntentService {
                     } catch (Exception e) {
                         Log.w(TAG, "Catch 1 " + e);
 
-                        if(scan!=null){
-                            scan.close();}
-                        if(connection!=null){
-                            Log.w(TAG,"Connection to disconnect inside of exception");
+                        if (scan != null) {
+                            scan.close();
+                        }
+                        if (connection != null) {
+                            Log.w(TAG, "Connection to disconnect inside of exception");
                             connection.disconnect();
                             Log.w(TAG, "Connection disconnected inside of exception");
                         }
-                        if(is!=null) {
+                        if (is != null) {
                             try {
                                 is.close();
                             } catch (Exception g) {
                                 e.printStackTrace();
                             }
                         }
-                        if(bis!=null)
-                        {
+                        if (bis != null) {
                             try {
                                 bis.close();
                             } catch (IOException g) {
@@ -100,7 +102,7 @@ public class ThreadedDownloadHTTP extends IntentService {
                     }
 
                     Log.w(TAG, "Before the printing go");
-                    if(go) {
+                    if (go) {
                         Log.w(TAG, "inside the printing go");
 
                         Double[] allFourNumbers = new Double[4];
@@ -111,14 +113,17 @@ public class ThreadedDownloadHTTP extends IntentService {
                                 Intent broadcastIntent = new Intent();
                                 broadcastIntent.setAction("response");
                                 broadcastIntent.addCategory(Intent.CATEGORY_DEFAULT);
-                                switch (k)
-                                {
-                                    case 0:broadcastIntent.putExtra("zero", scan.nextDouble());
-                                    case 1:broadcastIntent.putExtra("one", scan.nextDouble());
-                                    case 2:broadcastIntent.putExtra("two", scan.nextDouble());
-                                    case 3:broadcastIntent.putExtra("three", scan.nextDouble());
+                                switch (k) {
+                                    case 0:
+                                        broadcastIntent.putExtra("zero", scan.nextDouble());
+                                    case 1:
+                                        broadcastIntent.putExtra("one", scan.nextDouble());
+                                    case 2:
+                                        broadcastIntent.putExtra("two", scan.nextDouble());
+                                    case 3:
+                                        broadcastIntent.putExtra("three", scan.nextDouble());
                                 }
-                                if(!sent)
+                                if (!sent)
                                     Log.w(TAG, "sending broadcast");
 
                                 sendBroadcast(broadcastIntent);
@@ -139,8 +144,7 @@ public class ThreadedDownloadHTTP extends IntentService {
                     is.close();
                     Log.w(TAG, "8 bis closed down");
                     connection.disconnect();
-                    if(!sent)
-                    {
+                    if (!sent) {
                         Intent broadcastIntent = new Intent();
                         broadcastIntent.setAction("response");
                         broadcastIntent.addCategory(Intent.CATEGORY_DEFAULT);
@@ -153,14 +157,15 @@ public class ThreadedDownloadHTTP extends IntentService {
             Log.w(TAG, "Catch 3 " + e);
             e.printStackTrace();
 
-            if(scan!=null){
-                scan.close();}
-            if(connection!=null){
-                Log.w(TAG,"Connection to disconnect inside of exception");
+            if (scan != null) {
+                scan.close();
+            }
+            if (connection != null) {
+                Log.w(TAG, "Connection to disconnect inside of exception");
                 connection.disconnect();
                 Log.w(TAG, "Connection disconnected inside of exception");
             }
-            if(is!=null) {
+            if (is != null) {
                 try {
                     Log.w(TAG, "Trying to close is");
                     is.close();
@@ -169,8 +174,7 @@ public class ThreadedDownloadHTTP extends IntentService {
                     e.printStackTrace();
                 }
             }
-            if(bis!=null)
-            {
+            if (bis != null) {
                 try {
                     Log.w(TAG, "Trying to close bis");
                     bis.close();
@@ -181,8 +185,7 @@ public class ThreadedDownloadHTTP extends IntentService {
 
             }
             go = false;
-            if(!sent)
-            {
+            if (!sent) {
                 Intent broadcastIntent = new Intent();
                 broadcastIntent.setAction("response");
                 broadcastIntent.addCategory(Intent.CATEGORY_DEFAULT);

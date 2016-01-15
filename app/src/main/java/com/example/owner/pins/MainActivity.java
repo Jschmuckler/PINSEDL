@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        settings =  PreferenceManager.getDefaultSharedPreferences(this);
+        settings = PreferenceManager.getDefaultSharedPreferences(this);
         xRange = 20;
         smoothing = Integer.parseInt(settings.getString("SMOOTHING", "10"));
         threshold = Double.parseDouble(settings.getString("THRESHOLD", "1.5"));
@@ -110,14 +110,15 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     mySwitch.setText("OFF");
                     active = isChecked;
-                    if(btConnectedThread!=null){
-                    btConnectedThread.cancel();}
+                    if (btConnectedThread != null) {
+                        btConnectedThread.cancel();
+                    }
                     Log.w(TAG, "Active is " + active);
                 }
             }
         });
 
-         oldMain = (MainActivity) getLastCustomNonConfigurationInstance();
+        oldMain = (MainActivity) getLastCustomNonConfigurationInstance();
         graph = (GraphView) findViewById(R.id.graph);
 
         if (oldMain != null) {
@@ -170,7 +171,6 @@ public class MainActivity extends AppCompatActivity {
             one = (TextView) findViewById(R.id.DisplayValue1);
             two = (TextView) findViewById(R.id.DisplayValue2);
             three = (TextView) findViewById(R.id.DisplayValue3);
-
 
 
             series0.setThickness(15);
@@ -248,16 +248,17 @@ public class MainActivity extends AppCompatActivity {
         receiver = new ResponseReceiver();
         registerReceiver(receiver, filter);*/
 
-         currentData = new Double[4];
+        currentData = new Double[4];
 
     }
 
     @Override
-    public void onDestroy(){
-super.onDestroy();
+    public void onDestroy() {
+        super.onDestroy();
         Log.w(TAG, "In the onDestroy");
-        if(btConnectedThread!=null){
-        btConnectedThread.cancel();}
+        if (btConnectedThread != null) {
+            btConnectedThread.cancel();
+        }
         //mySwitch.setChecked(false);
         screenRotated = true;
     }
@@ -275,6 +276,7 @@ super.onDestroy();
      * About: Open information about the application
      * Eraser: Erase all of the data on the graph
      * Zero,One,Two,Three: Toggle on or off the corresponding series on the chart
+     *
      * @param item item that has been selected
      * @return true the action has been handled, false the action has not been handled
      */
@@ -356,13 +358,13 @@ super.onDestroy();
 
     /**
      * Allows the state to be saved when the app is paused or stopped
+     *
      * @return the instance of the activity that the app is in
      */
     @Override
     public Object onRetainCustomNonConfigurationInstance() {
         return this;
     }
-
 
 
     /**
@@ -378,10 +380,12 @@ super.onDestroy();
         series3.resetData(new DataPoint[]{});
         time = 0;
     }
+
     /**
      * Averages the number of data points specified in settings, and compares the average value to the threshold passed in.
      * If the minimum number of data points do not exist then it compares only those that do exist.
-     * @param threshold The threshold that is being compared to
+     *
+     * @param threshold    The threshold that is being compared to
      * @param seriesNumber The number of the series whos values should be evaluated
      * @return true if the threshold is larger than the overall average, false if the overall average is larger than the threshold
      */
@@ -389,16 +393,13 @@ super.onDestroy();
         Iterator<DataPoint> compValues;
 
         if (seriesNumber == 0) {
-            compValues = series0.getValues(time - smoothing, time );
-        }
-        else if (seriesNumber == 1) {
-            compValues = series1.getValues(time - smoothing, time );
-        }
-        else if (seriesNumber == 2) {
-            compValues = series2.getValues(time - smoothing, time );
-        }
-        else {
-            compValues = series3.getValues(time - smoothing, time );
+            compValues = series0.getValues(time - smoothing, time);
+        } else if (seriesNumber == 1) {
+            compValues = series1.getValues(time - smoothing, time);
+        } else if (seriesNumber == 2) {
+            compValues = series2.getValues(time - smoothing, time);
+        } else {
+            compValues = series3.getValues(time - smoothing, time);
         }
         double sum = 0;
         while (compValues.hasNext()) {
@@ -411,7 +412,7 @@ super.onDestroy();
         if (time < smoothing) {
             average = sum / time;
         } else {
-            average = sum / ((double)smoothing+1);
+            average = sum / ((double) smoothing + 1);
         }
         if (threshold > average) {
             return true;
@@ -419,6 +420,7 @@ super.onDestroy();
             return false;
         }
     }
+
     /**
      * Saves the neccesary values when the activity is paused.
      */
@@ -439,8 +441,8 @@ super.onDestroy();
         if (btAdapter == null) {
 // Device does not support Bluetooth
         }
-        if(btAdapter==null) {
-            Log.w(TAG,"Device does not support bluetooth, abort.");
+        if (btAdapter == null) {
+            Log.w(TAG, "Device does not support bluetooth, abort.");
         } else {
             if (btAdapter.isEnabled()) {
                 Log.d(TAG, "...Bluetooth is enabled...");
@@ -453,8 +455,7 @@ super.onDestroy();
         }
     }
 
-    private void getBondedDevices()
-    {
+    private void getBondedDevices() {
         if (btAdapter.isEnabled()) {
             Intent deviceList = new Intent(this, DeviceListActivity.class);
 
@@ -464,23 +465,21 @@ super.onDestroy();
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch(requestCode) {
+        switch (requestCode) {
             case REQUEST_CONNECT_DEVICE_INSECURE:
-                if(resultCode == Activity.RESULT_OK){
+                if (resultCode == Activity.RESULT_OK) {
                     String address = data.getExtras().getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
                     btDevice = btAdapter.getRemoteDevice(address);
                     Toast.makeText(this, btDevice.getName() + " is ready.", Toast.LENGTH_SHORT).show();
                     mySwitch.setClickable(true);
-                    if(oldMain != null)
-                        if(oldMain.mySwitch.isChecked())
-                        {
+                    if (oldMain != null)
+                        if (oldMain.mySwitch.isChecked()) {
                             mySwitch.setChecked(false);
                             mySwitch.setChecked(true);
 
                         }
                 }
-                if(resultCode == Activity.RESULT_CANCELED)
-                {
+                if (resultCode == Activity.RESULT_CANCELED) {
                     checkBTState();
                 }
                 break;
@@ -492,25 +491,23 @@ super.onDestroy();
     }
 
 
-    private void connectBT()
-    {
+    private void connectBT() {
 
-            if (btDevice != null)
-            {
+        if (btDevice != null) {
 
-                btHandler = new Handler() {
+            btHandler = new Handler() {
                 @Override
                 public void handleMessage(Message msg) {
                     byte[] writeBuf = (byte[]) msg.obj;
-                    int begin = (int)msg.arg1;
-                    int end = (int)msg.arg2;
+                    int begin = (int) msg.arg1;
+                    int end = (int) msg.arg2;
 
-                    switch(msg.what) {
+                    switch (msg.what) {
                         case 1:
                             String writeMessage = new String(writeBuf);
                             writeMessage = writeMessage.substring(begin, end);
                             getDoublesScanner = new Scanner(writeMessage);
-                            for(int k = 0;k<4;k++) {
+                            for (int k = 0; k < 4; k++) {
                                 if (getDoublesScanner.hasNextDouble()) {
                                     currentData[k] = getDoublesScanner.nextDouble();
                                 }
@@ -522,92 +519,90 @@ super.onDestroy();
                 }
             };
 
-                 btConnectedThread = new BlueConnectedThread(btHandler);
-                BlueConnectThread btConnectThread = new BlueConnectThread(btDevice, btAdapter,btHandler,btConnectedThread);
+            btConnectedThread = new BlueConnectedThread(btHandler);
+            BlueConnectThread btConnectThread = new BlueConnectThread(btDevice, btAdapter, btHandler, btConnectedThread);
             btConnectThread.start();
         }
     }
 
-public void addDataManagement(Double[] output)
-{
-    if (output[0] != null && output[1] != null && output[2] != null && output[3] != null) {
-
-        if (screenRotated) {
-
-            k++;
-
-            if (k == 10) {
-                screenRotated = false;
-                Log.w(TAG, "Old text: " + zero.getText().toString() + " New text: " + output[0].toString());
-                k = 0;
-            }
-        }
-
-        NumberFormat formatter = new DecimalFormat("#0.00");
+    public void addDataManagement(Double[] output) {
         if (output[0] != null && output[1] != null && output[2] != null && output[3] != null) {
-            if (zero != null && one != null && two != null && three != null) {
-                zero.setText(formatter.format(output[0]).toString());
-                one.setText(formatter.format(output[1]).toString());
-                two.setText(formatter.format(output[2]).toString());
-                three.setText(formatter.format(output[3]).toString());
 
+            if (screenRotated) {
 
-                DataPoint output0 = new DataPoint(time, output[0]);
-                DataPoint output1 = new DataPoint(time, output[1]);
-                DataPoint output2 = new DataPoint(time, output[2]);
-                DataPoint output3 = new DataPoint(time, output[3]);
+                k++;
 
-                if (time < xRange) {
-                    series0.appendData(output0, false, 300);
-                    series1.appendData(output1, false, 300);
-                    series2.appendData(output2, false, 300);
-                    series3.appendData(output3, false, 300);
-
-                } else {
-                    series0.appendData(output0, true, 300);
-                    series1.appendData(output1, true, 300);
-                    series2.appendData(output2, true, 300);
-                    series3.appendData(output3, true, 300);
+                if (k == 10) {
+                    screenRotated = false;
+                    Log.w(TAG, "Old text: " + zero.getText().toString() + " New text: " + output[0].toString());
+                    k = 0;
                 }
-                time++;
+            }
 
-                threshold = Double.parseDouble(settings.getString("THRESHOLD", "1.5"));
-                smoothing = Integer.parseInt(settings.getString("SMOOTHING", "10"));
+            NumberFormat formatter = new DecimalFormat("#0.00");
+            if (output[0] != null && output[1] != null && output[2] != null && output[3] != null) {
+                if (zero != null && one != null && two != null && three != null) {
+                    zero.setText(formatter.format(output[0]).toString());
+                    one.setText(formatter.format(output[1]).toString());
+                    two.setText(formatter.format(output[2]).toString());
+                    three.setText(formatter.format(output[3]).toString());
 
 
-                if (isThresholdBiggerThanAverage(threshold, 0)) {
-                    zero.setBackgroundColor(Color.GREEN);
+                    DataPoint output0 = new DataPoint(time, output[0]);
+                    DataPoint output1 = new DataPoint(time, output[1]);
+                    DataPoint output2 = new DataPoint(time, output[2]);
+                    DataPoint output3 = new DataPoint(time, output[3]);
+
+                    if (time < xRange) {
+                        series0.appendData(output0, false, 300);
+                        series1.appendData(output1, false, 300);
+                        series2.appendData(output2, false, 300);
+                        series3.appendData(output3, false, 300);
+
+                    } else {
+                        series0.appendData(output0, true, 300);
+                        series1.appendData(output1, true, 300);
+                        series2.appendData(output2, true, 300);
+                        series3.appendData(output3, true, 300);
+                    }
+                    time++;
+
+                    threshold = Double.parseDouble(settings.getString("THRESHOLD", "1.5"));
+                    smoothing = Integer.parseInt(settings.getString("SMOOTHING", "10"));
+
+
+                    if (isThresholdBiggerThanAverage(threshold, 0)) {
+                        zero.setBackgroundColor(Color.GREEN);
+                    } else {
+                        zero.setBackgroundColor(Color.RED);
+                    }
+
+                    if (isThresholdBiggerThanAverage(threshold, 1)) {
+                        one.setBackgroundColor(Color.GREEN);
+                    } else {
+                        one.setBackgroundColor(Color.RED);
+                    }
+
+                    if (isThresholdBiggerThanAverage(threshold, 2)) {
+
+                        two.setBackgroundColor(Color.GREEN);
+                    } else {
+                        two.setBackgroundColor(Color.RED);
+                    }
+                    if (isThresholdBiggerThanAverage(threshold, 3)) {
+
+                        three.setBackgroundColor(Color.GREEN);
+                    } else {
+                        three.setBackgroundColor(Color.RED);
+                    }
                 } else {
-                    zero.setBackgroundColor(Color.RED);
-                }
-
-                if (isThresholdBiggerThanAverage(threshold, 1)) {
-                    one.setBackgroundColor(Color.GREEN);
-                } else {
-                    one.setBackgroundColor(Color.RED);
-                }
-
-                if (isThresholdBiggerThanAverage(threshold, 2)) {
-
-                    two.setBackgroundColor(Color.GREEN);
-                } else {
-                    two.setBackgroundColor(Color.RED);
-                }
-                if (isThresholdBiggerThanAverage(threshold, 3)) {
-
-                    three.setBackgroundColor(Color.GREEN);
-                } else {
-                    three.setBackgroundColor(Color.RED);
+                    Log.w(TAG, "Text fields are null");
                 }
             } else {
-                Log.w(TAG, "Text fields are null");
+                Log.w(TAG, "Getting blank data");
             }
         }
-        else{
-            Log.w(TAG, "Getting blank data");
-        }
     }
-}
 
     /**
      * Activates when the app is resumed.
@@ -620,9 +615,8 @@ public void addDataManagement(Double[] output)
     }
 
 
-    private void setLineThickness()
-    {
-    int thickness = Integer.parseInt(settings.getString("THICKNESS", "10"));
+    private void setLineThickness() {
+        int thickness = Integer.parseInt(settings.getString("THICKNESS", "10"));
 
         series0.setThickness(thickness);
         series1.setThickness(thickness);

@@ -25,22 +25,20 @@ import android.widget.TextView;
 public class SettingsActivity extends Activity {
 
     @Override
-    protected  void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         FragmentManager manage = getFragmentManager();
         FragmentTransaction transact = manage.beginTransaction();
         myPrefsFragment prefs = new myPrefsFragment();
-        transact.replace(android.R.id.content,prefs);
+        transact.replace(android.R.id.content, prefs);
         transact.commit();
     }
 
-    public static class myPrefsFragment extends PreferenceFragment
-    {
+    public static class myPrefsFragment extends PreferenceFragment {
         SharedPreferences.OnSharedPreferenceChangeListener listener;
+
         @Override
-        public void onCreate(Bundle savedInstanceState)
-        {
+        public void onCreate(Bundle savedInstanceState) {
             super.onCreate((savedInstanceState));
             addPreferencesFromResource(R.xml.preferences);
         }

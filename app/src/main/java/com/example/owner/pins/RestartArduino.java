@@ -11,8 +11,8 @@ import java.net.URL;
 /**
  * Created by Owner on 12/15/2015.
  */
-public class RestartArduino extends AsyncTask<String,Void,Void> {
-private String url;
+public class RestartArduino extends AsyncTask<String, Void, Void> {
+    private String url;
     private String TAG = "RestartArduiono";
 
     @Override
@@ -27,8 +27,7 @@ private String url;
      * Note, this method will fail when other connections are still open
      * as the arduino can only handle one connection at a time.
      */
-    public void networkWork()
-    {
+    public void networkWork() {
         try {
             Log.w(TAG, "2 Inside first try");
 
@@ -51,16 +50,12 @@ private String url;
                 connection.disconnect();
                 //  Log.e(TAG, "Error-connection.getResponseCode returned " + Integer.toString(statusCode));
 
-            }
-            else
-            {
+            } else {
                 connection.disconnect();
             }
 
-        }
-        catch(Exception e)
-        {
-            Log.w(TAG,"Threw exception" + e);
+        } catch (Exception e) {
+            Log.w(TAG, "Threw exception" + e);
 
         }
     }
