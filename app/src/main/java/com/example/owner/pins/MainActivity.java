@@ -11,6 +11,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.preference.ListPreference;
+import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -71,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
     Double[] currentData;
     BlueConnectedThread btConnectedThread;
     int thickness;
-
+    Double units;
 
     boolean screenRotated = false;
     int k;
@@ -185,7 +187,7 @@ public class MainActivity extends AppCompatActivity {
         graph.getViewport().setScalable(true);
 
         graph.getGridLabelRenderer().setHorizontalAxisTitle("Points");
-        graph.getGridLabelRenderer().setVerticalAxisTitle("Voltage");
+        setUnits();
         if (isSeriesActive[0])
             graph.addSeries(series0);
         if (isSeriesActive[1])
@@ -526,20 +528,27 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void addDataManagement(Double[] output) {
+        NumberFormat formatter =new DecimalFormat("#0.00");
+
         if (output[0] != null && output[1] != null && output[2] != null && output[3] != null) {
+            for(int k = 0;k<4;k++) {
+                output[k] = output[k] * units;
+                switch (units.toString()) {
+                    case "1000.0":
+                        formatter = new DecimalFormat("#0000.0");
+                        break;
 
-            if (screenRotated) {
+                    case "1.0":
+                        formatter = new DecimalFormat("#0.00");
+                        break;
 
-                k++;
-
-                if (k == 10) {
-                    screenRotated = false;
-                    Log.w(TAG, "Old text: " + zero.getText().toString() + " New text: " + output[0].toString());
-                    k = 0;
+                    case "0.001":
+                        formatter = new DecimalFormat("#0.00000");
+                        break;
                 }
-            }
 
-            NumberFormat formatter = new DecimalFormat("#0.00");
+                }
+
             if (output[0] != null && output[1] != null && output[2] != null && output[3] != null) {
                 if (zero != null && one != null && two != null && three != null) {
                     zero.setText(formatter.format(output[0]).toString());
@@ -568,6 +577,7 @@ public class MainActivity extends AppCompatActivity {
                     time++;
 
                     threshold = Double.parseDouble(settings.getString("THRESHOLD", "1.5"));
+                    threshold = threshold*units;
                     smoothing = Integer.parseInt(settings.getString("SMOOTHING", "10"));
 
 
@@ -610,10 +620,33 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
+        setUnits();
         setLineThickness();
 
     }
 
+
+
+    private void setUnits()
+    {
+        clearData();
+        units = Double.parseDouble(settings.getString("UNIT","1.0"));
+        switch (units.toString())
+        {
+            case "1000.0":
+                graph.getGridLabelRenderer().setVerticalAxisTitle("Millivolts");
+                break;
+
+            case "1.0":
+                graph.getGridLabelRenderer().setVerticalAxisTitle("Volts");
+                break;
+
+            case "0.001":
+                graph.getGridLabelRenderer().setVerticalAxisTitle("Kilovolts");
+                break;
+        }
+
+    }
 
     private void setLineThickness() {
         int thickness = Integer.parseInt(settings.getString("THICKNESS", "10"));

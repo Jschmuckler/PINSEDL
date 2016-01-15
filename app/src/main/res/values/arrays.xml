@@ -7,5 +7,15 @@
         <item>Series 4</item>
     </string-array>
 
+    <string-array name="UnitNames">
+        <item>Millivolts</item>
+        <item>Volts</item>
+        <item>Kilovolts</item>
+    </string-array>
 
+    <string-array name="UnitConversions">
+        <item>1000</item>
+        <item>1</item>
+        <item>.001</item>
+    </string-array>
 </resources>

@@ -7,7 +7,7 @@
         android:title="Threshold"
         android:summary="Enter the threshold to keep the voltage below"
         android:inputType="numberDecimal"
-        android:maxLength="4"
+        android:maxLength="6"
         android:defaultValue="1.5"
         />
 
@@ -29,4 +29,11 @@
         android:defaultValue="10"
         />
 
+    <ListPreference
+        android:key="UNIT"
+        android:title ="Units"
+        android:summary="Select the units for the app\nClears previous data"
+        android:entries="@array/UnitNames"
+        android:entryValues="@array/UnitConversions"
+        android:defaultValue="1"/>
 </PreferenceScreen>
