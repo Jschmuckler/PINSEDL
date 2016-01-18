@@ -5,8 +5,11 @@
     <string name="action_bluetooth">Connect Bluetooth</string>
     <string name="action_help">Help</string>
 
-    <color name="grey">#EBEBEB</color>
+    <string name="on_label">ON</string>
+    <string name="off_label">OFF</string>
 
+    <color name="grey">#EBEBEB</color>
+    <color name="color_outside_threshold">#FF6347</color>
 
     <string name="scanning">scanning for devices...</string>
     <string name="select_device">select a device to connect</string>
@@ -15,4 +18,34 @@
     <string name="title_paired_devices">Paired Devices</string>
     <string name="title_other_devices">Other Available Devices</string>
     <string name="button_scan">Scan for devices</string>
+
+    <string name="is_ready">is ready to connect.</string>
+    <string name="bluetooth_unsupported_title">Device does not support bluetooth.</string>
+    <string name ="bluetooth_unsupported_text">Device does not have bluetooth and therefore cannot use this application.</string>
+
+
+    <string name="about_title">About</string>
+    <string name="about_part_one">PINS is designed for the reading and analysis of a four input signal system.</string>
+    <string name="about_part_two">To start, select a bluetooth device that is writing a serial output of four numbers through bluetooth in the form of 0 0 0 0# .</string>
+    <string name="about_part_three">Select your desired settings for the threshold, smoothing, thickness of the output lines, and the units to measure data in. </string>
+    <string name="about_part_four">Do not worry, as these can be adjusted at any time. Finally turn the switch from off to on. That\'s it! In a few seconds data should start to stream.</string>
+    <string name="about_part_five">You can tap on any line to see its values. Navigating to old data simply takes pressing and dragging back on the graph while the data is stopped. </string>
+    <string name="about_part_six">To zoom our or get a closer look at the data just pinch and reverse pinch the graph.</string>
+    <string name="about_part_seven">Author: Jordan Schmuckler</string>
+    <string name="about_part_eight">EDL</string>
+
+
+    <string name="help_title">Help</string>
+    <string name="help_part_one">Not receiving data?</string>
+    <string name="help_part_two"> You may have lost your connection. Then turn the switch back on. Be patient, as it may take a moment to connect.</string>
+    <string name="help_part_three">What does threshold mean?</string>
+    <string name="help_part_four">The threshold is the value the graph data is being compared to. If the voltage is getting too high the text off that value will be highlighted in red.</string>
+    <string name="help_part_five">What is smoothing?</string>
+    <string name="help_part_six">Smoothing represents the number of datapoints to be averaged before reporting that the readings are out of the desired bounds.</string>
+    <string name="help_part_seven"> Use a higher number for smoothing when there is more static in your signal.</string>
+
+    <string name="series_title_zero">Zero</string>
+    <string name="series_title_one">One</string>
+    <string name="series_title_two">Two</string>
+    <string name="series_title_three">Three</string>
 </resources>

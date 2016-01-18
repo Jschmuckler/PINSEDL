@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -161,30 +162,31 @@ public class MainActivity extends AppCompatActivity {
                 String newline = System.getProperty("line.separator");
                 AlertDialog.Builder alertDialogBuilderAbout = new AlertDialog.Builder(this);
                 alertDialogBuilderAbout
-                        .setTitle("About")
-                        .setMessage("PINS is designed for the reading and analysis of a four input signal system." + newline +
-                                "To start, select a bluetooth device that is writing a serial output of four numbers through bluetooth in the form of 0 0 0 0# ." +
-                                newline + newline + "Select your desired settings for the threshold, smoothing, thickness of the output lines, and the units to measure data in. " +
-                                "Do not worry, as these can be adjusted at any time. Finally turn the switch from off to on. That's it! In a few seconds data should start to stream." + newline + newline +
-                                "You can tap on any line to see its values. Navigating to old data simply takes pressing and dragging back on the graph while the data is stopped. " + newline +
-                                "To zoom our or get a closer look at the data just pinch and reverse pinch the graph."
-                                + newline + newline + "Author: Jordan Schmuckler" + newline + "EDL")
-                        .setCancelable(true)
-                        .show();
+                        .setTitle(getResources().getString(R.string.about_title))
+                        .setMessage(getResources().getString(R.string.about_part_one) + newline +
+                                        getResources().getString(R.string.about_part_two) + newline + newline +
+                                        getResources().getString(R.string.about_part_three) +
+                                        getResources().getString(R.string.about_part_four) + newline + newline +
+                                        getResources().getString(R.string.about_part_five) + newline +
+                                        getResources().getString(R.string.about_part_six) + newline + newline +
+                                        getResources().getString(R.string.about_part_seven) + newline +
+                                        getResources().getString(R.string.about_part_eight))
+                                .setCancelable(true)
+                                .show();
                 break;
 
             case R.id.action_help:
                 String newlineA = System.getProperty("line.separator");
                 AlertDialog.Builder alertDialogBuilderHelp = new AlertDialog.Builder(this);
                 alertDialogBuilderHelp
-                        .setTitle("Help")
-                        .setMessage("Not receiving data?" + newlineA +"Try turning the switch off, and then clicking Connect Bluetooth in the drop down menu to reconnect." +
-                                " You may have lost your connection. Then turn the switch back on. Be patient, as it may take a moment to connect."
-                                + newlineA + newlineA +"What does threshold mean?" + newlineA +
-                                "The threshold is the value the graph data is being compared to. If the voltage is getting too high the text off that value will be highlighted in red."
-                                + newlineA + newlineA + "What is smoothing?" + newlineA +
-                                "Smoothing represents the number of datapoints to be averaged before reporting that the readings are out of the desired bounds." +
-                                " Use a higher number for smoothing when there is more static in your signal.")
+                        .setTitle(getResources().getString(R.string.help_title))
+                        .setMessage(getResources().getString(R.string.help_part_one) + newlineA +
+                                getResources().getString(R.string.help_part_two) + newlineA + newlineA +
+                                getResources().getString(R.string.help_part_three) + newlineA +
+                                getResources().getString(R.string.help_part_four) + newlineA + newlineA +
+                                getResources().getString(R.string.help_part_five) + newlineA +
+                                getResources().getString(R.string.help_part_six) +
+                                getResources().getString(R.string.help_part_seven))
                         .setCancelable(true)
                         .show();
                 break;
@@ -301,8 +303,8 @@ public class MainActivity extends AppCompatActivity {
         if (btAdapter == null) {
             Log.w(TAG, "Device does not support bluetooth, abort.");
             new AlertDialog.Builder(this)
-                    .setTitle("Device does not support bluetooth.")
-                    .setMessage("Device does not have bluetooth and therefore cannot use this application.")
+                    .setTitle(getResources().getString(R.string.bluetooth_unsupported_title))
+                    .setMessage(getResources().getString(R.string.bluetooth_unsupported_text))
                     .setIcon(android.R.drawable.ic_dialog_alert)
                     .setCancelable(false)
                     .show();
@@ -384,13 +386,13 @@ public class MainActivity extends AppCompatActivity {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
                 if (isChecked) {
-                    mySwitch.setText("ON");
+                    mySwitch.setText(getResources().getString(R.string.on_label));
                     active = isChecked;
                     Log.w(TAG, "Active is " + active);
                     connectBT();
 
                 } else {
-                    mySwitch.setText("OFF");
+                    mySwitch.setText(getResources().getString(R.string.off_label));
                     active = isChecked;
                     if (btConnectedThread != null) {
                         btConnectedThread.cancel();
@@ -415,10 +417,10 @@ public class MainActivity extends AppCompatActivity {
         graph.getViewport().setMaxX(X_RANGE);
 
 
-        series0.setTitle("Zero");
-        series1.setTitle("One");
-        series2.setTitle("Two");
-        series3.setTitle("Three");
+        series0.setTitle(getResources().getString(R.string.series_title_zero));
+        series1.setTitle(getResources().getString(R.string.series_title_one));
+        series2.setTitle(getResources().getString(R.string.series_title_two));
+        series3.setTitle(getResources().getString(R.string.series_title_three));
 
 
         zero = (TextView) findViewById(R.id.DisplayValue0);
@@ -512,7 +514,7 @@ public class MainActivity extends AppCompatActivity {
                 if (resultCode == Activity.RESULT_OK) {
                     String address = data.getExtras().getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
                     btDevice = btAdapter.getRemoteDevice(address);
-                    Toast.makeText(this, btDevice.getName() + " is ready.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, btDevice.getName() + getResources().getString(R.string.is_ready), Toast.LENGTH_SHORT).show();
                     mySwitch.setClickable(true);
                     if (oldMain != null)
                         if (oldMain.mySwitch.isChecked()) {
@@ -543,7 +545,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void handleMessage(Message msg) {
                     byte[] writeBuf = (byte[]) msg.obj;
-                    int begin = (int) msg.arg1;
+                    int begin = (int)msg.arg1;
                     int end = (int) msg.arg2;
                     Double[] currentData = new Double[4];
 
@@ -625,26 +627,26 @@ public class MainActivity extends AppCompatActivity {
                     if (isThresholdBiggerThanAverage(0)) {
                         zero.setBackgroundColor(Color.TRANSPARENT);
                     } else {
-                        zero.setBackgroundColor(Color.parseColor("#FF6347"));
+                        zero.setBackgroundColor((ContextCompat.getColor(this, R.color.color_outside_threshold)));
                     }
 
                     if (isThresholdBiggerThanAverage(1)) {
                         one.setBackgroundColor(Color.TRANSPARENT);
                     } else {
-                        one.setBackgroundColor(Color.parseColor("#FF6347"));
+                        one.setBackgroundColor((ContextCompat.getColor(this, R.color.color_outside_threshold)));
                     }
 
                     if (isThresholdBiggerThanAverage(2)) {
 
                         two.setBackgroundColor(Color.TRANSPARENT);
                     } else {
-                        two.setBackgroundColor(Color.parseColor("#FF6347"));
+                        two.setBackgroundColor((ContextCompat.getColor(this, R.color.color_outside_threshold)));
                     }
                     if (isThresholdBiggerThanAverage(3)) {
 
                         three.setBackgroundColor(Color.TRANSPARENT);
                     } else {
-                        three.setBackgroundColor(Color.parseColor("#FF6347"));
+                        three.setBackgroundColor((ContextCompat.getColor(this, R.color.color_outside_threshold)));
                     }
                 } else {
                     Log.w(TAG, "Text fields are null");
