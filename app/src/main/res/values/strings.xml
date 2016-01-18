@@ -48,4 +48,20 @@
     <string name="series_title_one">One</string>
     <string name="series_title_two">Two</string>
     <string name="series_title_three">Three</string>
+
+    <string name="vertical_axis_millivolts">Millivolts</string>
+    <string name="vertical_axis_volts">Volts</string>
+    <string name="vertical_axis_kilovolts">Kilovolts</string>
+
+    <string name="threshold_title">Threshold</string>
+    <string name="threshold_summary">Enter the threshold to keep the voltage below\nFunctions according to app units</string>
+    <string name="smoothing_title">Smoothing</string>
+    <string name="smoothing_summary">Enter the number of values to be averaged to determine if the threshold has been passed</string>
+    <string name="thickness_title">Thickness</string>
+    <string name="thickness_summary">Enter the thickness to make your lines</string>
+    <string name="units_title">Units</string>
+    <string name="units_summary">Select the units for the upcoming data\nClears previous data</string>
+
+
+
 </resources>

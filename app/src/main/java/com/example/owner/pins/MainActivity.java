@@ -665,15 +665,15 @@ public class MainActivity extends AppCompatActivity {
         units = Double.parseDouble(settings.getString("UNIT", "1.0"));
         switch (units.toString()) {
             case "1000.0":
-                graph.getGridLabelRenderer().setVerticalAxisTitle("Millivolts");
+                graph.getGridLabelRenderer().setVerticalAxisTitle(getResources().getString(R.string.vertical_axis_millivolts));
                 break;
 
             case "1.0":
-                graph.getGridLabelRenderer().setVerticalAxisTitle("Volts");
+                graph.getGridLabelRenderer().setVerticalAxisTitle(getResources().getString(R.string.vertical_axis_volts));
                 break;
 
             case "0.001":
-                graph.getGridLabelRenderer().setVerticalAxisTitle("Kilovolts");
+                graph.getGridLabelRenderer().setVerticalAxisTitle(getResources().getString(R.string.vertical_axis_kilovolts));
                 break;
         }
 

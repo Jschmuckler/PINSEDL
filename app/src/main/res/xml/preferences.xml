@@ -4,8 +4,8 @@
 
     <EditTextPreference
         android:key="THRESHOLD"
-        android:title="Threshold"
-        android:summary="Enter the threshold to keep the voltage below\nFunctions according to app units"
+        android:title="@string/threshold_title"
+        android:summary="@string/threshold_summary"
         android:inputType="numberDecimal"
         android:maxLength="6"
         android:defaultValue="1.5"
@@ -13,8 +13,8 @@
 
     <EditTextPreference
         android:key="SMOOTHING"
-        android:title="Smoothing"
-        android:summary="Enter the number of values to be averaged to determine if the threshold has been passed"
+        android:title="@string/smoothing_title"
+        android:summary="@string/smoothing_summary"
         android:inputType="number"
         android:maxLength="2"
         android:defaultValue="10"
@@ -22,8 +22,8 @@
 
     <EditTextPreference
         android:key="THICKNESS"
-        android:title="Thickness"
-        android:summary="Enter the thickness to make your lines"
+        android:title="@string/thickness_title"
+        android:summary="@string/thickness_summary"
         android:inputType="number"
         android:maxLength="2"
         android:defaultValue="10"
@@ -31,8 +31,8 @@
 
     <ListPreference
         android:key="UNIT"
-        android:title ="Units"
-        android:summary="Select the units for the upcoming data\nClears previous data"
+        android:title ="@string/units_title"
+        android:summary="@string/units_summary"
         android:entries="@array/UnitNames"
         android:entryValues="@array/UnitConversions"
         android:defaultValue="1"/>
