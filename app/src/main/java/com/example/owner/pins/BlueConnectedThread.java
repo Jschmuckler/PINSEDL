@@ -18,10 +18,8 @@ public class BlueConnectedThread extends Thread implements Runnable {
     private final Handler btHandler;
 
     public BlueConnectedThread(Handler btHandler) {
-
         this.btHandler = btHandler;
     }
-
 
     public void run() {
         InputStream tmpIn = null;
@@ -34,7 +32,6 @@ public class BlueConnectedThread extends Thread implements Runnable {
         }
         btInStream = tmpIn;
         btOutStream = tmpOut;
-
 
         byte[] buffer = new byte[1024];
         int begin = 0;
@@ -55,6 +52,7 @@ public class BlueConnectedThread extends Thread implements Runnable {
             } catch (IOException e) {
                 Log.w(TAG, "Stopped connected thread");
                 break;
+
             }
         }
     }

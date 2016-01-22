@@ -9,7 +9,7 @@
     <string name="off_label">OFF</string>
 
     <color name="grey">#EBEBEB</color>
-    <color name="color_outside_threshold">#FF6347</color>
+    <color name="color_outside_threshold">#68ff6347</color>
 
     <string name="scanning">scanning for devices...</string>
     <string name="select_device">select a device to connect</string>
@@ -33,7 +33,6 @@
     <string name="about_part_six">To zoom our or get a closer look at the data just pinch and reverse pinch the graph.</string>
     <string name="about_part_seven">Author: Jordan Schmuckler</string>
     <string name="about_part_eight">EDL</string>
-
 
     <string name="help_title">Help</string>
     <string name="help_part_one">Not receiving data?</string>
@@ -61,7 +60,5 @@
     <string name="thickness_summary">Enter the thickness to make your lines</string>
     <string name="units_title">Units</string>
     <string name="units_summary">Select the units for the upcoming data\nClears previous data</string>
-
-
 
 </resources>

@@ -2,6 +2,9 @@ package com.example.owner.pins;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
@@ -13,6 +16,7 @@ import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.NotificationCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -63,22 +67,25 @@ public class MainActivity extends AppCompatActivity {
     private boolean active = false;
     private boolean[] isSeriesActive = new boolean[4];
 
-    private Handler btHandler;
+    private static Handler btHandler;
     private BlueConnectedThread btConnectedThread;
     private Double units;
     private int time = 0;
+    private int pointsAveragedSoFar;
 
+    private Double[] currentData;
     private static final int REQUEST_CONNECT_DEVICE_INSECURE = 1;
     private static final int BLUETOOTH_ACTIVATE = 2;
     private final int SMOOTHING_DEFAULT = 10;
     private final double THRESHOLD_DEFAULT = 1.5;
     private final int X_RANGE = 20;
+    private final int NUM_POINTS_TO_AVERAGE_PER_POINT = 7;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         settings = PreferenceManager.getDefaultSharedPreferences(this);
-
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -164,15 +171,15 @@ public class MainActivity extends AppCompatActivity {
                 alertDialogBuilderAbout
                         .setTitle(getResources().getString(R.string.about_title))
                         .setMessage(getResources().getString(R.string.about_part_one) + newline +
-                                        getResources().getString(R.string.about_part_two) + newline + newline +
-                                        getResources().getString(R.string.about_part_three) +
-                                        getResources().getString(R.string.about_part_four) + newline + newline +
-                                        getResources().getString(R.string.about_part_five) + newline +
-                                        getResources().getString(R.string.about_part_six) + newline + newline +
-                                        getResources().getString(R.string.about_part_seven) + newline +
-                                        getResources().getString(R.string.about_part_eight))
-                                .setCancelable(true)
-                                .show();
+                                getResources().getString(R.string.about_part_two) + newline + newline +
+                                getResources().getString(R.string.about_part_three) +
+                                getResources().getString(R.string.about_part_four) + newline + newline +
+                                getResources().getString(R.string.about_part_five) + newline +
+                                getResources().getString(R.string.about_part_six) + newline + newline +
+                                getResources().getString(R.string.about_part_seven) + newline +
+                                getResources().getString(R.string.about_part_eight))
+                        .setCancelable(true)
+                        .show();
                 break;
 
             case R.id.action_help:
@@ -284,11 +291,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
             average = sum / ((double) smoothing + 1);
         }
-        if (threshold > average) {
-            return true;
-        } else {
-            return false;
-        }
+        return threshold > average;
     }
 
     /**
@@ -352,7 +355,6 @@ public class MainActivity extends AppCompatActivity {
         btConnectedThread = oldMain.btConnectedThread;
 
         time = oldMain.time;
-
 
         zero = (TextView) findViewById(R.id.DisplayValue0);
         one = (TextView) findViewById(R.id.DisplayValue1);
@@ -428,6 +430,7 @@ public class MainActivity extends AppCompatActivity {
         two = (TextView) findViewById(R.id.DisplayValue2);
         three = (TextView) findViewById(R.id.DisplayValue3);
 
+        pointsAveragedSoFar = 0;
 
         for (int k = 0; k < 4; k++) {
             isSeriesActive[k] = true;
@@ -463,8 +466,11 @@ public class MainActivity extends AppCompatActivity {
         graph.getLegendRenderer().setVisible(true);
         graph.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.TOP);
 
+        currentData = new Double[]{0.0, 0.0, 0.0, 0.0};
+
         setLineThickness();
     }
+
 
     /**
      * Gives listeners to each individual series so they display their data
@@ -545,9 +551,8 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void handleMessage(Message msg) {
                     byte[] writeBuf = (byte[]) msg.obj;
-                    int begin = (int)msg.arg1;
+                    int begin = (int) msg.arg1;
                     int end = (int) msg.arg2;
-                    Double[] currentData = new Double[4];
 
                     switch (msg.what) {
                         case 1:
@@ -557,11 +562,23 @@ public class MainActivity extends AppCompatActivity {
                             Scanner getDoublesScanner = new Scanner(writeMessage);
                             for (int k = 0; k < 4; k++) {
                                 if (getDoublesScanner.hasNextDouble()) {
-                                    currentData[k] = getDoublesScanner.nextDouble();
+                                    currentData[k] = currentData[k] + getDoublesScanner.nextDouble();
+                                    //Log.w(TAG,"Averaged so far: "+ pointsAveragedSoFar + "        series:"+k + ": "+ currentData[k] );
+
                                 }
                             }
-
-                            addDataManagement(currentData);
+                            pointsAveragedSoFar++;
+                            if (pointsAveragedSoFar >= NUM_POINTS_TO_AVERAGE_PER_POINT) {
+                                //Log.w(TAG,"pointsAveragedSoFar: " + pointsAveragedSoFar);
+                                //Log.w(TAG,"NUM_POINTS_TO_AVERAGE_PER_POINT " + NUM_POINTS_TO_AVERAGE_PER_POINT);
+                                for (int k = 0; k < 4; k++) {
+                                    //Log.w(TAG,"Current data at: " + k + " " + currentData[k]);
+                                    currentData[k] = currentData[k] / NUM_POINTS_TO_AVERAGE_PER_POINT;
+                                }
+                                addDataManagement(currentData);
+                                currentData = new Double[]{0.0, 0.0, 0.0, 0.0};
+                                pointsAveragedSoFar = 0;
+                            }
                             break;
                     }
                 }
@@ -628,6 +645,8 @@ public class MainActivity extends AppCompatActivity {
                         zero.setBackgroundColor(Color.TRANSPARENT);
                     } else {
                         zero.setBackgroundColor((ContextCompat.getColor(this, R.color.color_outside_threshold)));
+
+
                     }
 
                     if (isThresholdBiggerThanAverage(1)) {
@@ -695,4 +714,15 @@ public class MainActivity extends AppCompatActivity {
         series2.setThickness(thickness);
         series3.setThickness(thickness);
     }
+
+  private void notification(){
+       /* Invoking the default notification service */
+      NotificationCompat.Builder  mBuilder = new NotificationCompat.Builder(this);
+
+      mBuilder.setContentTitle("New Message");
+      mBuilder.setContentText("You've received new message.");
+      mBuilder.setTicker("New Message Alert!");
+     // mBuilder.setSmallIcon(R.drawable.woman);
+    }
+
 }

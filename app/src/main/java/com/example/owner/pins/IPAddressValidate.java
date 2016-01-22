@@ -1,5 +1,9 @@
 package com.example.owner.pins;
-
+/**
+ * Created by Owner on 12/7/2015.
+ * WARNING CLASS ONLY USED IN HTTP VERSION OF PROGRAM.
+ * Do not realease with bluetooth build.
+ */
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -13,6 +17,7 @@ public class IPAddressValidate {
                     "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
                     "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
                     "([01]?\\d\\d?|2[0-4]\\d|25[0-5])$";
+
 
     public IPAddressValidate() {
         pattern = Pattern.compile(IPADDRESS_PATTERN);
@@ -28,5 +33,4 @@ public class IPAddressValidate {
         matcher = pattern.matcher(ip);
         return matcher.matches();
     }
-
 }

@@ -14,6 +14,8 @@ import java.util.Scanner;
 
 /**
  * Created by Owner on 12/15/2015.
+ * WARNING CLASS ONLY USED IN HTTP VERSION OF PROGRAM.
+ * Do not realease with bluetooth build.
  */
 public class ThreadedDownloadHTTP extends IntentService {
 
@@ -52,8 +54,12 @@ public class ThreadedDownloadHTTP extends IntentService {
                 sendBroadcast(broadcastIntent);
                 sent = true;
                 go = false;
-            }
-
+            }/*
+what would you do if i sang out of tune would you stand up and and instance walk out on me lend me your ears and i'll sing you a song and i'll try not to sing out of key
+the good dinosaur went to the phone market and said that he needed to practice how fast he could truly type whether or not there are mistakes in what he is typing is really unimportant
+why did that take so long hey I am in that crowd but this is a poor description of that method which is designed to make the actual connection and did I really use if(go) I
+mean come on that is rediculous jean national richmond va happy happy happy having fun fun fun cause everything is happy and everything is nice for today
+at least it is warm i dislike that somebody turned on the heat I mean come on that is redic*/
             if (go) {
                 is = connection.getInputStream();
                 bis = new BufferedReader(new InputStreamReader(is));

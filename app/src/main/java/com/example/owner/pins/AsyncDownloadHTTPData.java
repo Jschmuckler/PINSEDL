@@ -16,6 +16,8 @@ import java.util.Scanner;
 
 /**
  * Created by Owner on 12/7/2015.
+ * WARNING CLASS ONLY USED IN HTTP VERSION OF PROGRAM.
+ * Do not realease with bluetooth build.
  */
 public class AsyncDownloadHTTPData extends AsyncTask<String, Void, String> {
 

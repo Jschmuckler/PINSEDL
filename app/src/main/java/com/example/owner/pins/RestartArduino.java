@@ -10,6 +10,8 @@ import java.net.URL;
 
 /**
  * Created by Owner on 12/15/2015.
+ * WARNING CLASS ONLY USED IN HTTP VERSION OF PROGRAM.
+ * Do not realease with bluetooth build.
  */
 public class RestartArduino extends AsyncTask<String, Void, Void> {
     private String url;
